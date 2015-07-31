@@ -18,6 +18,8 @@ decode_results results;
 //フォトインタラプタ
 const int INTRRPT = 2;
 const int attchINTRRPT = 0;
+//測距モジュール
+const int dstns_msrng = 1;
 
 //-----初期化-----
 void setup() {
