@@ -117,8 +117,9 @@ void left(int left) {        //左旋回
   analogWrite(PWM_motL, 255);
   if(left ==180)
     while(1)
-      if(change > 7)
+      if(change > 19)
         break;
+  change=0;
 }
 void right(int right) {     //右旋回
   digitalWrite(motorR1, HIGH);
