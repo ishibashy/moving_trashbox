@@ -44,15 +44,6 @@ void setup() {
 int rise = 0;
 int valval = digitalRead(INTRRPT);
 int change = 0;
-//int fall = 0;
-//void photo_falling() {         //フォトインタラプタ
-//  int val = digitalRead(INTRRPT);
-//  if (val == HIGH){
-//    Serial.println("rising");
-//  }else{
-//    Serial.println("falling");
-//  }
-//}
 
 void photo_falling() {         //フォトインタラプタ
   int val = digitalRead(INTRRPT);
@@ -63,7 +54,6 @@ void photo_falling() {         //フォトインタラプタ
     Serial.println("times_changed");
  // }
 }
-
 
 void ahead() {               //前進
   digitalWrite(motorR1, HIGH);
@@ -77,9 +67,8 @@ void ahead() {               //前進
     if(rise>6*10)
     break;
   }
-  
-  
 }
+
 void ahead_d() {             //前進斜め
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -126,7 +115,10 @@ void left(int left) {        //左旋回
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, 255);
-  delay(10 * left);
+  if(left ==180)
+    while(1)
+      if(change > 7)
+        break;
 }
 void right(int right) {     //右旋回
   digitalWrite(motorR1, HIGH);
