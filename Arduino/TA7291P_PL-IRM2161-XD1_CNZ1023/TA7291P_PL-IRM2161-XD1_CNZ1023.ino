@@ -41,19 +41,30 @@ void setup() {
 
 //-----メインで使う関数-----
 
-int rise = 0;
 int valval = digitalRead(INTRRPT);
 int change = 0;
 
 void photo_falling() {         //フォトインタラプタ
-  int val = digitalRead(INTRRPT);
-  //if (valval != val){
-   // valval = val;
     change++;
     Serial.print(change);
     Serial.println("times_changed");
- // }
 }
+
+void circle(int angle) {       //回転
+  if(angle == 180)
+      while(1)
+        if(change > 19)
+          break;
+  else if(angle == 135)
+      while(1)
+        if(change > 14)
+          break;
+  else
+      while(1)
+        if(change > 9)
+          break;
+    change = 0;
+  }
 
 void ahead() {               //前進
   digitalWrite(motorR1, HIGH);
@@ -62,12 +73,12 @@ void ahead() {               //前進
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, 255);
-  delay(2000);
-  while(1){
-    if(rise>6*10)
-    break;
-  }
+  while(1)
+    if(change > 682)
+      break;
+  change = 0;
 }
+
 
 void ahead_d() {             //前進斜め
   digitalWrite(motorR1, HIGH);
@@ -76,36 +87,38 @@ void ahead_d() {             //前進斜め
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, 255);
-  delay(2000 * sqrt(2));
+  while(1)
+    if(change > 964)
+      break;
+  change = 0;
+  
 }
 
-void astern() {      //後進
+void astern(int changechange) {      //後進
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, 255);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, 255);
-  //delay(time);
+  while(1)
+    if(change > changechange)
+      break;
+  change = 0;
 }
 
 void brake() {  //ブレーキ
-  rise = 0;
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
-  delay(300);
-  int riserise = rise;
-  rise = 0;
-  astern();
-  while(rise<riserise){ 
-  }
+  int changechange = change;
+  change = 0;
+  astern(changechange);
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
-  rise = 0;
 }
 
 void left(int left) {        //左旋回
@@ -115,11 +128,7 @@ void left(int left) {        //左旋回
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, 255);
-  if(left ==180)
-    while(1)
-      if(change > 19)
-        break;
-  change=0;
+  circle(left);
 }
 void right(int right) {     //右旋回
   digitalWrite(motorR1, HIGH);
@@ -129,15 +138,15 @@ void right(int right) {     //右旋回
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, 255);
   delay(10 * right);
+  circle(right);
 }
 //--------------------------
-
+//-----メイン-----
 int i = 1;
 int j = 2;
 int angle1 = 90;
 int angle2 = 135;
 int angle3 = 180;
-//-----メイン-----
 void loop() {
 
   if (irrecv.decode(&results)) {
@@ -185,7 +194,7 @@ void loop() {
       Serial.println("Received_P2");
       if (i == 1) {
         if (j == 2)
-          left(100);
+          left(angle3);
         Serial.println("angle180");
         if (j == 3)
           right(angle2);
