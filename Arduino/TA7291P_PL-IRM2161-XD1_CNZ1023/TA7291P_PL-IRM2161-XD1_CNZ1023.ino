@@ -16,10 +16,8 @@ const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
 decode_results results;
 //フォトインタラプタ
-const int INTRRPT = 2;
-const int attchINTRRPT = 0;
+const int INTRRPT = 1;
 const int INTRRPT_L = 3;
-const int attchINTRRPT_L = 0;
 //測距モジュール
 const int dstns_msrng = 1;
 
@@ -33,7 +31,8 @@ void setup() {
   //IRモジュール
   irrecv.enableIRIn(); // Start the receiver
   //フォトインタラプタ
-  attachInterrupt(attchINTRRPT, photo_falling, CHANGE);
+  attachInterrupt(1, photo_changingL, CHANGE);
+  attachInterrupt(0, photo_changingR, CHANGE);
   Serial.begin(9600);
 }
 //----------------
@@ -42,28 +41,35 @@ void setup() {
 //-----メインで使う関数-----
 
 int valval = digitalRead(INTRRPT);
-int change = 0;
+int changeL = 0;
+int changeR = 0;
 
-void photo_falling() {         //フォトインタラプタ
-    change++;
-    Serial.print(change);
-    Serial.println("times_changed");
+void photo_changingL() {         //フォトインタラプタ
+    changeL++;
+    Serial.print(changeL);
+    Serial.println("times_changed_L");
+}
+
+void photo_changingR() {         //フォトインタラプタ
+    changeR++;
+    Serial.print(changeR);
+    Serial.println("times_changed_R");
 }
 
 void circle(int angle) {       //回転
   if(angle == 180)
       while(1)
-        if(change > 19)
+        if(changeL > 19 || changeR > 19)
           break;
   else if(angle == 135)
       while(1)
-        if(change > 14)
+        if(changeL > 14 || changeR > 14)
           break;
   else
       while(1)
-        if(change > 9)
+        if(changeL > 9 || changeR > 9)
           break;
-    change = 0;
+    changeL = changeR = 0;
   }
 
 void ahead() {               //前進
@@ -74,9 +80,9 @@ void ahead() {               //前進
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, 255);
   while(1)
-    if(change > 682)
+    if(changeL > 682 || changeR > 682)
       break;
-  change = 0;
+  changeL = changeR = 0;
 }
 
 
@@ -88,9 +94,9 @@ void ahead_d() {             //前進斜め
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, 255);
   while(1)
-    if(change > 964)
+    if(changeL > 964 || changeR > 964)
       break;
-  change = 0;
+  changeL = changeR = 0;
   
 }
 
@@ -102,9 +108,9 @@ void astern(int changechange) {      //後進
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, 255);
   while(1)
-    if(change > changechange)
+    if(changeL > changechange || changeR > changechange)
       break;
-  change = 0;
+  changeL = changeR = 0;
 }
 
 void brake() {  //ブレーキ
@@ -112,8 +118,10 @@ void brake() {  //ブレーキ
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
-  int changechange = change;
-  change = 0;
+  int changechange = changeL;
+  if(changechange < changeR)
+    changechange = changeR;
+  changeL = changeR = 0;
   astern(changechange);
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
@@ -137,7 +145,6 @@ void right(int right) {     //右旋回
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, 255);
-  delay(10 * right);
   circle(right);
 }
 //--------------------------
