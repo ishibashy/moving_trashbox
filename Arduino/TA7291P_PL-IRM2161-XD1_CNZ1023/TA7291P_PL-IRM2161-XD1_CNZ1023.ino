@@ -29,7 +29,7 @@ void setup() {
   attachInterrupt(1, photo_changingL, CHANGE);
   attachInterrupt(0, photo_changingR, CHANGE);
   Serial.begin(9600);
-一部分}
+}
 //----------------
 
 
