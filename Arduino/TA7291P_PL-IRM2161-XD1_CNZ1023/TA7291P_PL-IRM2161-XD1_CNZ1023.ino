@@ -15,9 +15,6 @@ const int PWM_motL = 13;
 const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
 decode_results results;
-//フォトインタラプタ
-const int INTRRPT = 1;
-const int INTRRPT_L = 3;
 //測距モジュール
 const int dstns_msrng = 1;
 
@@ -40,7 +37,6 @@ void setup() {
 
 //-----メインで使う関数-----
 
-int valval = digitalRead(INTRRPT);
 int changeL = 0;
 int changeR = 0;
 
@@ -306,7 +302,7 @@ void loop() {
     irrecv.resume(); // Receive the next value
   }
 delay(1000);
-Serial.println(valval);
+Serial.println(".");
 }
 //---------------
 
