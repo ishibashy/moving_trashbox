@@ -1,7 +1,5 @@
 #include <IRremote.h>
 
-//#include <Servo.h>
-//Servo ore_no_servo;
 // モーター制御
 //右
 const int motorR1 = 8;//const:不変
@@ -31,7 +29,7 @@ void setup() {
   attachInterrupt(1, photo_changingL, CHANGE);
   attachInterrupt(0, photo_changingR, CHANGE);
   Serial.begin(9600);
-}
+一部分}
 //----------------
 
 
