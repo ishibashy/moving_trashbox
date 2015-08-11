@@ -1,5 +1,5 @@
 #include <IRremote.h>
-
+///////
 // モーター制御
 //右
 const int motorR1 = 8;//const:不変//
