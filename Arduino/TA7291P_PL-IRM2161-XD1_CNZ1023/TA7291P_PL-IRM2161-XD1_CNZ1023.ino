@@ -2,7 +2,7 @@
 
 // モーター制御
 //右
-const int motorR1 = 8;//const:不変
+const int motorR1 = 8;//const:不変//
 const int motorR2 = 9;
 const int PWM_motR = 10;
 //左
