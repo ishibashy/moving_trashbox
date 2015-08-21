@@ -35,22 +35,34 @@ void setup() {
 
 //-----メインで使う関数-----
 
+//フォトインタラプタのchange回数
 int changeL = 0;
 int changeR = 0;
+//モータのスピード
+int speedL = 255;//後で直進する比を実測
+int speedR = 255;
 
 void photo_changingL() {         //フォトインタラプタ
     changeL++;
     Serial.print(changeL);
     Serial.println("times_changed_L");
+
 }
 
 void photo_changingR() {         //フォトインタラプタ
     changeR++;
     Serial.print(changeR);
     Serial.println("times_changed_R");
+    
 }
 
 void circle(int angle) {       //回転
+  digitalWrite(motorR1, HIGH);
+  digitalWrite(motorR2, LOW);
+  analogWrite(PWM_motR, speedL);
+  digitalWrite(motorL1, HIGH);
+  digitalWrite(motorL2, LOW);
+  analogWrite(PWM_motL, speedR);
   if(angle == 180)
       while(1)
         if(changeL > 19 || changeR > 19)
@@ -69,10 +81,10 @@ void circle(int angle) {       //回転
 void ahead() {               //前進
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, 255);
+  analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
-  analogWrite(PWM_motL, 255);
+  analogWrite(PWM_motL, speedR);
   while(1)
     if(changeL > 682 || changeR > 682)
       break;
@@ -83,10 +95,10 @@ void ahead() {               //前進
 void ahead_d() {             //前進斜め
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, 255);
+  analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
-  analogWrite(PWM_motL, 255);
+  analogWrite(PWM_motL, speedR);
   while(1)
     if(changeL > 964 || changeR > 964)
       break;
@@ -97,10 +109,10 @@ void ahead_d() {             //前進斜め
 void astern(int changechange) {      //後進
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
-  analogWrite(PWM_motR, 255);
+  analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
-  analogWrite(PWM_motL, 255);
+  analogWrite(PWM_motL, speedR);
   while(1)
     if(changeL > changechange || changeR > changechange)
       break;
@@ -126,19 +138,19 @@ void brake() {  //ブレーキ
 void left(int left) {        //左旋回
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
-  analogWrite(PWM_motR, 255);
+  analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
-  analogWrite(PWM_motL, 255);
+  analogWrite(PWM_motL, speedR);
   circle(left);
 }
 void right(int right) {     //右旋回
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, 255);
+  analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
-  analogWrite(PWM_motL, 255);
+  analogWrite(PWM_motL, speedR);
   circle(right);
 }
 //--------------------------
