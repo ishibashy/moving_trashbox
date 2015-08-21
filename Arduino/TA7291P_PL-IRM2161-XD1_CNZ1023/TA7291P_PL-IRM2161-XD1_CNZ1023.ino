@@ -14,7 +14,7 @@ const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
 decode_results results;
 //測距モジュール
-const int dstns_msrng = 1;
+const int dstns_msrng = 0;
 
 //-----初期化-----
 void setup() {
@@ -28,6 +28,8 @@ void setup() {
   //フォトインタラプタ
   attachInterrupt(1, photo_changingL, CHANGE);
   attachInterrupt(0, photo_changingR, CHANGE);
+  //測距モジュール
+  pinMode(dstns_msrng, OUTPUT);
   Serial.begin(9600);
 }
 //----------------
@@ -41,6 +43,9 @@ int changeR = 0;
 //モータのスピード
 int speedL = 255;//後で直進する比を実測、255:237とか
 int speedR = 255;
+//関数のID
+int id;
+
 
 void photo_changingL() {         //フォトインタラプタ
     changeL++;
@@ -60,6 +65,29 @@ void photo_changingR() {         //フォトインタラプタ
       speedR--;
       speedL = 255;//後で直進する比を実測
     }    
+}
+
+void barricade_check(){    //障害物検知
+  int distance;
+  distance = (6762 / (analogRead(0) - 9)) - 4;
+  Serial.print(distance);
+  Serial.println("cm");
+  //80cm以内を複数回検知してからにするかも
+  if(distance < 80){
+    Serial.println("!!!STOP!!!");
+    int tmpL = changeL;
+    int tmpR = changeR;
+    brake();
+    while(1)
+      if((6762 / (analogRead(0) - 9)) - 4 > 80)
+        break;
+    changeL = tmpL;
+    changeR = tmpR;
+    if(id == 0)
+      ahead();
+    else
+      ahead_d();  
+  }
 }
 
 void motor_speed(){
@@ -90,6 +118,7 @@ void circle(int angle) {       //回転
   }
 
 void ahead() {               //前進
+  id = 0;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
@@ -98,6 +127,7 @@ void ahead() {               //前進
   analogWrite(PWM_motL, speedR);
   while(1){
     motor_speed();
+    barricade_check();
     if(changeL > 682 || changeR > 682)
       break;
   }
@@ -106,6 +136,7 @@ void ahead() {               //前進
 
 
 void ahead_d() {             //前進斜め
+  id = 1;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
@@ -114,6 +145,7 @@ void ahead_d() {             //前進斜め
   analogWrite(PWM_motL, speedR);
   while(1){
     motor_speed();
+    barricade_check();
     if(changeL > 964 || changeR > 964)
       break;
   }
