@@ -39,42 +39,53 @@ void setup() {
 int changeL = 0;
 int changeR = 0;
 //モータのスピード
-int speedL = 255;//後で直進する比を実測
+int speedL = 255;//後で直進する比を実測、255:237とか
 int speedR = 255;
 
 void photo_changingL() {         //フォトインタラプタ
     changeL++;
     Serial.print(changeL);
     Serial.println("times_changed_L");
-
+    if(changeL>changeR){
+      speedL--;
+      speedR = 255;//後で直進する比を実測
+    }  
 }
 
 void photo_changingR() {         //フォトインタラプタ
     changeR++;
     Serial.print(changeR);
     Serial.println("times_changed_R");
-    
+    if(changeL>changeR){
+      speedR--;
+      speedL = 255;//後で直進する比を実測
+    }    
+}
+
+void motor_speed(){
+  analogWrite(PWM_motR, speedL);
+  analogWrite(PWM_motL, speedR);
 }
 
 void circle(int angle) {       //回転
-  digitalWrite(motorR1, HIGH);
-  digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, HIGH);
-  digitalWrite(motorL2, LOW);
-  analogWrite(PWM_motL, speedR);
   if(angle == 180)
-      while(1)
+      while(1){
+        motor_speed();
         if(changeL > 19 || changeR > 19)
           break;
+      }
   else if(angle == 135)
-      while(1)
+      while(1){
+        motor_speed();
         if(changeL > 14 || changeR > 14)
           break;
+      }
   else
-      while(1)
+      while(1){
+        motor_speed();
         if(changeL > 9 || changeR > 9)
           break;
+      }
     changeL = changeR = 0;
   }
 
@@ -85,9 +96,11 @@ void ahead() {               //前進
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
-  while(1)
+  while(1){
+    motor_speed();
     if(changeL > 682 || changeR > 682)
       break;
+  }
   changeL = changeR = 0;
 }
 
@@ -99,9 +112,11 @@ void ahead_d() {             //前進斜め
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
-  while(1)
+  while(1){
+    motor_speed();
     if(changeL > 964 || changeR > 964)
       break;
+  }
   changeL = changeR = 0;
   
 }
@@ -113,9 +128,11 @@ void astern(int changechange) {      //後進
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
-  while(1)
+  while(1){
+    motor_speed();
     if(changeL > changechange || changeR > changechange)
       break;
+  }
   changeL = changeR = 0;
 }
 
