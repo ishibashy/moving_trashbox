@@ -1,6 +1,5 @@
 #include <IRremote.h>
-///////
-// モーター制御
+// モータ制御
 //右
 const int motorR1 = 8;//const:不変//
 const int motorR2 = 9;
@@ -18,7 +17,7 @@ const int dstns_msrng = 0;
 
 //-----初期化-----
 void setup() {
-  // モーター制御
+  // モータ制御
   pinMode(motorR1, OUTPUT); //信号用ピン
   pinMode(motorR2, OUTPUT); //信号用ピン
   pinMode(motorL1, OUTPUT); //信号用ピン
@@ -46,8 +45,7 @@ int speedR = 255;
 //関数のID
 int id;
 
-
-void photo_changingL() {         //フォトインタラプタ
+void photo_changingL() {         //フォトインタラプタ左
     changeL++;
     Serial.print(changeL);
     Serial.println("times_changed_L");
@@ -57,17 +55,17 @@ void photo_changingL() {         //フォトインタラプタ
     }  
 }
 
-void photo_changingR() {         //フォトインタラプタ
+void photo_changingR() {         //フォトインタラプタ右
     changeR++;
     Serial.print(changeR);
     Serial.println("times_changed_R");
-    if(changeL>changeR){
+    if(changeR>changeL){
       speedR--;
       speedL = 255;//後で直進する比を実測
     }    
 }
 
-void barricade_check(){    //障害物検知
+void barricade_check(){          //障害物検知
   int distance;
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.print(distance);
@@ -90,7 +88,7 @@ void barricade_check(){    //障害物検知
   }
 }
 
-void motor_speed(){
+void motor_speed(){            //モータ速度呼び出し
   analogWrite(PWM_motR, speedL);
   analogWrite(PWM_motL, speedR);
 }
@@ -150,7 +148,6 @@ void ahead_d() {             //前進斜め
       break;
   }
   changeL = changeR = 0;
-  
 }
 
 void astern(int changechange) {      //後進
@@ -361,7 +358,10 @@ void loop() {
     irrecv.resume(); // Receive the next value
   }
 delay(1000);
-Serial.println(".");
+Serial.print("speedL:");
+Serial.print(speedL);
+Serial.print(" speedR:");
+Serial.println(speedR);
 }
 //---------------
 
