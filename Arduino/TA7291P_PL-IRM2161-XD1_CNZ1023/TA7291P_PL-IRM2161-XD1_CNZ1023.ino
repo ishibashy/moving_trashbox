@@ -1,4 +1,5 @@
 #include <IRremote.h>
+//#include "Tone.cpp"
 // モータ制御
 //右
 const int motorR1 = 8;//const:不変//
@@ -12,6 +13,9 @@ const int PWM_motL = 13;
 const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
 decode_results results;
+//ブザー
+int BZZR = 6;
+int melo = 500;
 //測距モジュール
 const int dstns_msrng = 0;
 
@@ -44,78 +48,116 @@ int speedL = 255;//後で直進する比を実測、255:237とか
 int speedR = 255;
 //関数のID
 int id;
+//ブザーの電信の種類
+bool b = true;
 
 void photo_changingL() {         //フォトインタラプタ左
-    changeL++;
-    Serial.print(changeL);
-    Serial.println("times_changed_L");
-    if(changeL>changeR){
-      speedL--;
-      speedR = 255;//後で直進する比を実測
-    }  
+  changeL++;
+  Serial.print(changeL);
+  Serial.println("times_changed_L");
+  if (changeL > changeR) {
+    speedL--;
+    speedR = 255;//後で直進する比を実測
+  }
 }
 
 void photo_changingR() {         //フォトインタラプタ右
-    changeR++;
-    Serial.print(changeR);
-    Serial.println("times_changed_R");
-    if(changeR>changeL){
-      speedR--;
-      speedL = 255;//後で直進する比を実測
-    }    
+  changeR++;
+  Serial.print(changeR);
+  Serial.println("times_changed_R");
+  if (changeR > changeL) {
+    speedR--;
+    speedL = 255;//後で直進する比を実測
+  }
 }
 
-void barricade_check(){          //障害物検知
+void cw(int melo){
+  digitalWrite(BZZR,HIGH);
+  delay(melo);
+  digitalWrite(BZZR,LOW);
+  delay(100);
+}
+
+void buzzer() {                  //ブザー
+  int count = 0;
+
+  while (count < 8) {
+    //tone(BZZR, 131, melo); //ド
+    digitalWrite(BZZR,HIGH);
+    delay(melo);
+    digitalWrite(BZZR,LOW);
+    delay(melo);
+    count++;
+  }
+  if(b){
+    cw(100);cw(100);cw(100);//ブザー1
+    delay(200);
+    cw(300);cw(300);cw(300);
+    delay(200);
+    cw(100);cw(100);cw(100);
+    b = false;
+  }else{
+    cw(300);cw(300);cw(100);//ブザー2
+    delay(200);
+    cw(300);cw(300);cw(300);
+    b = true;
+  }
+}
+
+void barricade_check() {         //障害物検知
   int distance;
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.print(distance);
   Serial.println("cm");
   //80cm以内を複数回検知してからにするかも
-  if(distance < 80){
+  if (distance < 80) {
     Serial.println("!!!STOP!!!");
     int tmpL = changeL;
     int tmpR = changeR;
     brake();
-    while(1)
-      if((6762 / (analogRead(0) - 9)) - 4 > 80)
+    buzzer();//ブザー1
+    while (1)
+      if ((6762 / (analogRead(0) - 9)) - 4 > 80)
         break;
+    Serial.println("!!!RESTART!!!");    
+    buzzer();//ブザー2
     changeL = tmpL;
     changeR = tmpR;
-    if(id == 0)
+    if (id == 0)
       ahead();
     else
-      ahead_d();  
+      ahead_d();
   }
 }
 
-void motor_speed(){            //モータ速度呼び出し
+void motor_speed() {             //モータ速度呼び出し
   analogWrite(PWM_motR, speedL);
   analogWrite(PWM_motL, speedR);
 }
 
-void circle(int angle) {       //回転
-  if(angle == 180)
-      while(1){
-        motor_speed();
-        if(changeL > 19 || changeR > 19)
-          break;
-      }
-  else if(angle == 135)
-      while(1){
-        motor_speed();
-        if(changeL > 14 || changeR > 14)
-          break;
-      }
+void circle(int angle) {         //回転
+  if (angle == 180)
+    while (1) {
+      motor_speed();
+      if (changeL > 19 || changeR > 19)
+        break;
+    }
+  else if (angle == 135)
+    while (1) {
+      motor_speed();
+      if (changeL > 14 || changeR > 14)
+        break;
+    }
   else
-      while(1){
-        motor_speed();
-        if(changeL > 9 || changeR > 9)
-          break;
-      }
-    changeL = changeR = 0;
-  }
+    while (1) {
+      motor_speed();
+      if (changeL > 9 || changeR > 9)
+        break;
+    }
+  changeL = changeR = 0;
+}
 
-void ahead() {               //前進
+void ahead() {                   //前進
   id = 0;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -123,17 +165,17 @@ void ahead() {               //前進
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
-  while(1){
+  while (1) {
     motor_speed();
     barricade_check();
-    if(changeL > 682 || changeR > 682)
+    if (changeL > 682 || changeR > 682)
       break;
   }
   changeL = changeR = 0;
 }
 
 
-void ahead_d() {             //前進斜め
+void ahead_d() {                 //前進斜め
   id = 1;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -141,25 +183,25 @@ void ahead_d() {             //前進斜め
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
-  while(1){
+  while (1) {
     motor_speed();
     barricade_check();
-    if(changeL > 964 || changeR > 964)
+    if (changeL > 964 || changeR > 964)
       break;
   }
   changeL = changeR = 0;
 }
 
-void astern(int changechange) {      //後進
+void astern(int changechange) {  //後進
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
-  while(1){
+  while (1) {
     motor_speed();
-    if(changeL > changechange || changeR > changechange)
+    if (changeL > changechange || changeR > changechange)
       break;
   }
   changeL = changeR = 0;
@@ -171,7 +213,7 @@ void brake() {  //ブレーキ
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
   int changechange = changeL;
-  if(changechange < changeR)
+  if (changechange < changeR)
     changechange = changeR;
   changeL = changeR = 0;
   astern(changechange);
@@ -181,7 +223,7 @@ void brake() {  //ブレーキ
   digitalWrite(motorL2, LOW);
 }
 
-void left(int left) {        //左旋回
+void left(int left) {            //左旋回
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
@@ -190,7 +232,7 @@ void left(int left) {        //左旋回
   analogWrite(PWM_motL, speedR);
   circle(left);
 }
-void right(int right) {     //右旋回
+void right(int right) {          //右旋回
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
@@ -354,14 +396,14 @@ void loop() {
     Serial.print(i);
     Serial.println("kara kitan.");
     Serial.println("----------");
-    
+
     irrecv.resume(); // Receive the next value
   }
-delay(1000);
-Serial.print("speedL:");
-Serial.print(speedL);
-Serial.print(" speedR:");
-Serial.println(speedR);
+  delay(1000);
+  Serial.print("speedL:");
+  Serial.print(speedL);
+  Serial.print(" speedR:");
+  Serial.println(speedR);
 }
 //---------------
 
