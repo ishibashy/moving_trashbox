@@ -1,6 +1,5 @@
 #include <IRremote.h>
-//#include "Tone.cpp"
-// モータ制御
+// モータ
 //右
 const int motorR1 = 8;//const:不変//
 const int motorR2 = 9;
@@ -9,15 +8,23 @@ const int PWM_motR = 10;
 const int motorL1 = 11;
 const int motorL2 = 12;
 const int PWM_motL = 13;
+//スピード
+int speedL = 255;//後で直進する比を実測、255:237とか
+int speedR = 255;
 //IRモジュール
 const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
 decode_results results;
+//フォトインタラプタ、change回数
+int changeL = 0;
+int changeR = 0;
 //ブザー
-int BZZR = 6;
+const int BZZR = 6;
 int melo = 500;
 //測距モジュール
 const int dstns_msrng = 0;
+//関数のID
+int id;
 
 //-----初期化-----
 void setup() {
@@ -33,6 +40,9 @@ void setup() {
   attachInterrupt(0, photo_changingR, CHANGE);
   //測距モジュール
   pinMode(dstns_msrng, OUTPUT);
+  //ブザー
+  pinMode(BZZR, OUTPUT);
+  
   Serial.begin(9600);
 }
 //----------------
@@ -40,18 +50,7 @@ void setup() {
 
 //-----メインで使う関数-----
 
-//フォトインタラプタのchange回数
-int changeL = 0;
-int changeR = 0;
-//モータのスピード
-int speedL = 255;//後で直進する比を実測、255:237とか
-int speedR = 255;
-//関数のID
-int id;
-//ブザーの電信の種類
-bool b = true;
-
-void photo_changingL() {         //フォトインタラプタ左
+void photo_changingL() {                    //フォトインタラプタ左
   changeL++;
   Serial.print(changeL);
   Serial.println("times_changed_L");
@@ -61,7 +60,7 @@ void photo_changingL() {         //フォトインタラプタ左
   }
 }
 
-void photo_changingR() {         //フォトインタラプタ右
+void photo_changingR() {                    //フォトインタラプタ右
   changeR++;
   Serial.print(changeR);
   Serial.println("times_changed_R");
@@ -72,15 +71,15 @@ void photo_changingR() {         //フォトインタラプタ右
 }
 
 void cw(int melo){
+  int melo_speed = 1;
   digitalWrite(BZZR,HIGH);
-  delay(melo);
+  delay(melo * melo_speed);
   digitalWrite(BZZR,LOW);
-  delay(100);
+  delay(100 * melo_speed);
 }
 
-void buzzer() {                  //ブザー
+void buzzer(bool b) {                       //ブザー
   int count = 0;
-
   while (count < 8) {
     //tone(BZZR, 131, melo); //ド
     digitalWrite(BZZR,HIGH);
@@ -104,7 +103,7 @@ void buzzer() {                  //ブザー
   }
 }
 
-void barricade_check() {         //障害物検知
+void barricade_check() {                    //障害物検知
   int distance;
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.print(distance);
@@ -115,12 +114,12 @@ void barricade_check() {         //障害物検知
     int tmpL = changeL;
     int tmpR = changeR;
     brake();
-    buzzer();//ブザー1
+    buzzer(true);//ブザー1
     while (1)
       if ((6762 / (analogRead(0) - 9)) - 4 > 80)
         break;
     Serial.println("!!!RESTART!!!");    
-    buzzer();//ブザー2
+    buzzer(false);//ブザー2
     changeL = tmpL;
     changeR = tmpR;
     if (id == 0)
@@ -130,12 +129,12 @@ void barricade_check() {         //障害物検知
   }
 }
 
-void motor_speed() {             //モータ速度呼び出し
+void motor_speed() {                        //モータ速度呼び出し
   analogWrite(PWM_motR, speedL);
   analogWrite(PWM_motL, speedR);
 }
 
-void circle(int angle) {         //回転
+void circle(int angle) {                    //回転
   if (angle == 180)
     while (1) {
       motor_speed();
@@ -157,7 +156,7 @@ void circle(int angle) {         //回転
   changeL = changeR = 0;
 }
 
-void ahead() {                   //前進
+void ahead() {                              //前進
   id = 0;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -175,7 +174,7 @@ void ahead() {                   //前進
 }
 
 
-void ahead_d() {                 //前進斜め
+void ahead_d() {                            //前進斜め
   id = 1;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -192,7 +191,7 @@ void ahead_d() {                 //前進斜め
   changeL = changeR = 0;
 }
 
-void astern(int changechange) {  //後進
+void astern(int changechange) {             //後進
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
@@ -207,7 +206,7 @@ void astern(int changechange) {  //後進
   changeL = changeR = 0;
 }
 
-void brake() {  //ブレーキ
+void brake() {                              //ブレーキ
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
@@ -223,7 +222,7 @@ void brake() {  //ブレーキ
   digitalWrite(motorL2, LOW);
 }
 
-void left(int left) {            //左旋回
+void left(int left) {                       //左旋回
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
@@ -232,7 +231,7 @@ void left(int left) {            //左旋回
   analogWrite(PWM_motL, speedR);
   circle(left);
 }
-void right(int right) {          //右旋回
+void right(int right) {                     //右旋回
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
@@ -373,21 +372,20 @@ void loop() {
           left(angle2);          //or right(45);
         if (j == 4)
           left(angle3);          //or no_rotate
-        ahead_d(); //or  astern_();
+        ahead_d();               //or  astern_();
         j = 2;
       } else if (i == 3) {
         if (j == 1)
-          right(angle2); //or left(45);
+          right(angle2);         //or left(45);
         if (j == 2)
-          left(angle1);   //or right(90);
+          left(angle1);          //or right(90);
         if (j == 4)
-          left(angle3);  //or no_rotate
-        ahead();   //or astern();
+          left(angle3);          //or no_rotate
+        ahead();                 //or astern();
         j = 3;
       }
       i = 4;
     }
-    //astern(0);
     brake();
     Serial.print("ima P");
     Serial.print(j);
