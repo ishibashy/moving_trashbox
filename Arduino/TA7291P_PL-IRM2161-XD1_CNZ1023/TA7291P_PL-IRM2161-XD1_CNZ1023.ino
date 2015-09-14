@@ -1,7 +1,7 @@
 #include <IRremote.h>
 // モータ
 //右
-const int motorR1 = 8;//const:不変//
+const int motorR1 = 8;
 const int motorR2 = 9;
 const int PWM_motR = 10;
 //左
@@ -19,7 +19,7 @@ decode_results results;
 int changeL = 0;
 int changeR = 0;
 //ブザー
-const int BZZR = 6;
+const int buzzer = 6;
 int melo = 500;
 //測距モジュール
 const int dstns_msrng = 0;
@@ -28,20 +28,22 @@ int id;
 
 //-----初期化-----
 void setup() {
-  // モータ制御
-  pinMode(motorR1, OUTPUT); //信号用ピン
-  pinMode(motorR2, OUTPUT); //信号用ピン
-  pinMode(motorL1, OUTPUT); //信号用ピン
-  pinMode(motorL2, OUTPUT); //信号用ピン
+  // モータ
+  //右
+  pinMode(motorR1, OUTPUT);
+  pinMode(motorR2, OUTPUT);
+  //左
+  pinMode(motorL1, OUTPUT);
+  pinMode(motorL2, OUTPUT);
   //IRモジュール
-  irrecv.enableIRIn(); // Start the receiver
+  irrecv.enableIRIn();
   //フォトインタラプタ
   attachInterrupt(1, photo_changingL, CHANGE);
   attachInterrupt(0, photo_changingR, CHANGE);
   //測距モジュール
   pinMode(dstns_msrng, OUTPUT);
   //ブザー
-  pinMode(BZZR, OUTPUT);
+  pinMode(buzzer, OUTPUT);
   
   Serial.begin(9600);
 }
@@ -72,19 +74,19 @@ void photo_changingR() {                    //フォトインタラプタ右
 
 void cw(int melo){
   int melo_speed = 1;
-  digitalWrite(BZZR,HIGH);
+  digitalWrite(buzzer,HIGH);
   delay(melo * melo_speed);
-  digitalWrite(BZZR,LOW);
+  digitalWrite(buzzer,LOW);
   delay(100 * melo_speed);
 }
 
-void buzzer(bool b) {                       //ブザー
+void CBuzzer(bool b) {                       //ブザー
   int count = 0;
   while (count < 8) {
-    //tone(BZZR, 131, melo); //ド
-    digitalWrite(BZZR,HIGH);
+    //tone(buzzer, 131, melo); //ド
+    digitalWrite(buzzer,HIGH);
     delay(melo);
-    digitalWrite(BZZR,LOW);
+    digitalWrite(buzzer,LOW);
     delay(melo);
     count++;
   }
@@ -114,12 +116,12 @@ void barricade_check() {                    //障害物検知
     int tmpL = changeL;
     int tmpR = changeR;
     brake();
-    buzzer(true);//ブザー1
+    CBuzzer(true);//ブザー1
     while (1)
       if ((6762 / (analogRead(0) - 9)) - 4 > 80)
         break;
     Serial.println("!!!RESTART!!!");    
-    buzzer(false);//ブザー2
+    CBuzzer(false);//ブザー2
     changeL = tmpL;
     changeR = tmpR;
     if (id == 0)
@@ -242,8 +244,8 @@ void right(int right) {                     //右旋回
 }
 //--------------------------
 //-----メイン-----
-int i = 1;
-int j = 2;
+int id1 = 1;
+int id2 = 2;
 int angle1 = 90;
 int angle2 = 135;
 int angle3 = 180;
@@ -254,148 +256,148 @@ void loop() {
     Serial.println(results.value, DEC);
     Serial.println(results.value, BIN);
 
-    String s = "";
-    s = (String)results.value;
+    String receiveValue = "";
+    receiveValue = (String)results.value;
     //Received_P :　これから向かう点
-    //i          :　今いる点
-    //j          :　前にいた点
-    if (s == "3873901013") {
+    //id1          :　今いる点
+    //id2          :　前にいた点
+    if (receiveValue == "3873901013") {
       Serial.println("Received_P1");
-      if (i == 2) {
-        if (j == 1)
+      if (id1 == 2) {
+        if (id2 == 1)
           left(angle3);
-        if (j == 3)
+        if (id2 == 3)
           left(angle1);
-        if (j == 4)
+        if (id2 == 4)
           left(angle2);
         ahead();
-        j = 2;
-      } else if (i == 3) {
-        if (j == 1)
+        id2 = 2;
+      } else if (id1 == 3) {
+        if (id2 == 1)
           left(angle3);
-        if (j == 2)
+        if (id2 == 2)
           right(angle2);
-        if (j == 4)
+        if (id2 == 4)
           left(angle2);
         ahead_d();
-        j = 3;
-      } else if (i == 4) {
-        if (j == 1)
+        id2 = 3;
+      } else if (id1 == 4) {
+        if (id2 == 1)
           left(angle3);
-        if (j == 2)
+        if (id2 == 2)
           right(angle2);
-        if (j == 3)
+        if (id2 == 3)
           right(angle1);
         ahead();
-        j = 4;
+        id2 = 4;
       }
-      i = 1;
-    } else if (s == "1513342804") {
+      id1 = 1;
+    } else if (receiveValue == "1513342804") {
       Serial.println("Received_P2");
-      if (i == 1) {
-        if (j == 2)
+      if (id1 == 1) {
+        if (id2 == 2)
           left(angle3);
         Serial.println("angle180");
-        if (j == 3)
+        if (id2 == 3)
           right(angle2);
-        if (j == 4)
+        if (id2 == 4)
           right(angle1);
         ahead();
         Serial.println("ahead");
-        j = 2;
-      } else if (i == 3) {
-        if (j == 1)
+        id2 = 2;
+      } else if (id1 == 3) {
+        if (id2 == 1)
           left(angle2);
-        if (j == 2)
+        if (id2 == 2)
           left(angle3);
-        if (j == 4)
+        if (id2 == 4)
           left(angle1);
         ahead_d();
-        j = 3;
-      } else if (i == 4) {
-        if (j == 1)
+        id2 = 3;
+      } else if (id1 == 4) {
+        if (id2 == 1)
           left(angle2);
-        if (j == 2)
+        if (id2 == 2)
           left(angle3);
-        if (j == 3)
+        if (id2 == 3)
           right(angle2);
         ahead();
-        j = 4;
+        id2 = 4;
       }
-      i = 2;
-    } else if (s == "4092259158") {
+      id1 = 2;
+    } else if (receiveValue == "4092259158") {
       Serial.println("Received_P3");
-      if (i == 1) {
-        if (j == 2)
+      if (id1 == 1) {
+        if (id2 == 2)
           left(angle2);
-        if (j == 3)
+        if (id2 == 3)
           left(angle3);
-        if (j == 4)
+        if (id2 == 4)
           right(angle2);
         ahead_d();
-        j = 1;
-      } else if (i == 2) {
-        if (j == 1)
+        id2 = 1;
+      } else if (id1 == 2) {
+        if (id2 == 1)
           right(angle1);
-        if (j == 3)
+        if (id2 == 3)
           left(angle3);
-        if (j == 4)
+        if (id2 == 4)
           right(angle2);
         ahead();
-        j = 2;
-      } else if (i == 4) {
-        if (j == 1)
+        id2 = 2;
+      } else if (id1== 4) {
+        if (id2 == 1)
           left(angle1);
-        if (j == 2)
+        if (id2 == 2)
           left(angle2);
-        if (j == 3)
+        if (id2 == 3)
           left(angle3);
         ahead();
-        j = 4;
+        id2 = 4;
       }
-      i = 3;
-    } else if (s == "869376052") {
+      id1= 3;
+    } else if (receiveValue == "869376052") {
       Serial.println("Received_P4");
-      if (i == 1) {
-        if (j == 2)
+      if (id1 == 1) {
+        if (id2 == 2)
           left(angle1);  //or  right(90);
-        if (j == 3)
+        if (id2 == 3)
           left(angle2);  //or  right(45);
-        if (j == 4)
+        if (id2 == 4)
           left(angle3); //or no_rotate
         ahead();  //or  astern();
-        j = 1;
-      } else if (i == 2) {
-        if (j == 1)
+        id2 = 1;
+      } else if (id1 == 2) {
+        if (id2 == 1)
           right(angle2);         //or left(45);
-        if (j == 3)
+        if (id2 == 3)
           left(angle2);          //or right(45);
-        if (j == 4)
+        if (id2 == 4)
           left(angle3);          //or no_rotate
         ahead_d();               //or  astern_();
-        j = 2;
-      } else if (i == 3) {
-        if (j == 1)
+        id2 = 2;
+      } else if (id1 == 3) {
+        if (id2 == 1)
           right(angle2);         //or left(45);
-        if (j == 2)
+        if (id2 == 2)
           left(angle1);          //or right(90);
-        if (j == 4)
+        if (id2 == 4)
           left(angle3);          //or no_rotate
         ahead();                 //or astern();
-        j = 3;
+        id2 = 3;
       }
-      i = 4;
+      id1 = 4;
     }
     brake();
     Serial.print("ima P");
-    Serial.print(j);
+    Serial.print(id2);
     Serial.println("ni irun.");
     Serial.print("P");
-    Serial.print(i);
+    Serial.print(id1);
     Serial.println("kara kitan.");
     Serial.println("----------");
 
-    irrecv.resume(); // Receive the next value
+    irrecv.resume();
   }
   delay(1000);
   Serial.print("speedL:");
