@@ -16,8 +16,8 @@ const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
 decode_results results;
 //フォトインタラプタ、change回数
-int changeL = 0;
-int changeR = 0;
+int volatile changeL = 0;
+int volatile changeR = 0;
 //ブザー
 const int buzzer = 6;
 int melo = 500;
@@ -52,25 +52,7 @@ void setup() {
 
 //-----メインで使う関数-----
 
-void photo_changingL() {                    //フォトインタラプタ左
-  changeL++;
-  Serial.print(changeL);
-  Serial.println("times_changed_L");
-  if (changeL > changeR) {
-    speedL--;
-    speedR = 255;//後で直進する比を実測
-  }
-}
 
-void photo_changingR() {                    //フォトインタラプタ右
-  changeR++;
-  Serial.print(changeR);
-  Serial.println("times_changed_R");
-  if (changeR > changeL) {
-    speedR--;
-    speedL = 255;//後で直進する比を実測
-  }
-}
 
 void cw(int melo){
   int melo_speed = 1;
@@ -194,21 +176,26 @@ void ahead_d() {                            //前進斜め
 }
 
 void astern(int changechange) {             //後進
+  Serial.println("start astern()");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
+  Serial.println("while ni hairimasu");
   while (1) {
+    Serial.println("while");
     motor_speed();
-    if (changeL > changechange || changeR > changechange)
+    if (changeL >= changechange || changeR >= changechange)
       break;
   }
+  Serial.println("break");
   changeL = changeR = 0;
 }
 
 void brake() {                              //ブレーキ
+  Serial.println("start brake()");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
@@ -217,6 +204,7 @@ void brake() {                              //ブレーキ
   if (changechange < changeR)
     changechange = changeR;
   changeL = changeR = 0;
+  Serial.println("astern() ni hairimasu");
   astern(changechange);
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
@@ -388,6 +376,7 @@ void loop() {
       }
       id1 = 4;
     }
+    Serial.println("brake() ni hairimasu.");
     brake();
     Serial.print("ima P");
     Serial.print(id2);
@@ -407,3 +396,22 @@ void loop() {
 }
 //---------------
 
+void photo_changingL() {                    //フォトインタラプタ左
+  changeL++;
+  Serial.print(changeL);
+  Serial.println("times_changed_L");
+  if (changeL > changeR) {
+    speedL--;
+    speedR = 255;//後で直進する比を実測
+  }
+}
+
+void photo_changingR() {                    //フォトインタラプタ右
+  changeR++;
+  Serial.print(changeR);
+  Serial.println("times_changed_R");
+  if (changeR > changeL) {
+    speedR--;
+    speedL = 255;//後で直進する比を実測
+  }
+}
