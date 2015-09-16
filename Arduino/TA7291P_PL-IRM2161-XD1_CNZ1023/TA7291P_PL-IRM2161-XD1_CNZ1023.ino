@@ -18,11 +18,11 @@ decode_results results;
 //フォトインタラプタ、change回数
 int volatile changeL = 0;
 int volatile changeR = 0;
+//測距モジュール
+int count = 0;
 //ブザー
 const int buzzer = 6;
 int melo = 500;
-//測距モジュール
-const int dstns_msrng = 0;
 //関数のID
 int id;
 
@@ -40,8 +40,6 @@ void setup() {
   //フォトインタラプタ
   attachInterrupt(1, photo_changingL, CHANGE);
   attachInterrupt(0, photo_changingR, CHANGE);
-  //測距モジュール
-  pinMode(dstns_msrng, OUTPUT);
   //ブザー
   pinMode(buzzer, OUTPUT);
   
@@ -49,10 +47,28 @@ void setup() {
 }
 //----------------
 
+//--割り込み関数--
+void photo_changingL() {                    //フォトインタラプタ左
+  changeL++;
+  Serial.print(changeL);
+  Serial.println("times_changed_L");
+  if (changeL > changeR) {
+    speedL--;
+    speedR = 255;//後で直進する比を実測
+  }
+}
 
-//-----メインで使う関数-----
-
-
+void photo_changingR() {                    //フォトインタラプタ右
+  changeR++;
+  Serial.print(changeR);
+  Serial.println("times_changed_R");
+  if (changeR > changeL) {
+    speedR--;
+    speedL = 255;//後で直進する比を実測
+  }
+}
+//----------------
+//-メインで使う関数-
 
 void cw(int melo){
   int melo_speed = 1;
@@ -92,16 +108,27 @@ void barricade_check() {                    //障害物検知
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.print(distance);
   Serial.println("cm");
-  //80cm以内を複数回検知してからにするかも
-  if (distance < 80) {
+
+  if (distance < 80) 
+    count++;
+  else
+    count = 0;
+      
+  if(count > 10) {
     Serial.println("!!!STOP!!!");
     int tmpL = changeL;
     int tmpR = changeR;
     brake();
     CBuzzer(true);//ブザー1
-    while (1)
-      if ((6762 / (analogRead(0) - 9)) - 4 > 80)
+    while (1){
+      distance = (6762 / (analogRead(0) - 9)) - 4;
+      Serial.print(distance);
+      Serial.println("cm");
+      if ((6762 / (distance - 9)) - 4 > 80)
+        count--;
+      if(count < 1)
         break;
+    }
     Serial.println("!!!RESTART!!!");    
     CBuzzer(false);//ブザー2
     changeL = tmpL;
@@ -230,7 +257,7 @@ void right(int right) {                     //右旋回
   analogWrite(PWM_motL, speedR);
   circle(right);
 }
-//--------------------------
+//----------------
 //-----メイン-----
 int id1 = 1;
 int id2 = 2;
@@ -395,23 +422,3 @@ void loop() {
   Serial.println(speedR);
 }
 //---------------
-
-void photo_changingL() {                    //フォトインタラプタ左
-  changeL++;
-  Serial.print(changeL);
-  Serial.println("times_changed_L");
-  if (changeL > changeR) {
-    speedL--;
-    speedR = 255;//後で直進する比を実測
-  }
-}
-
-void photo_changingR() {                    //フォトインタラプタ右
-  changeR++;
-  Serial.print(changeR);
-  Serial.println("times_changed_R");
-  if (changeR > changeL) {
-    speedR--;
-    speedL = 255;//後で直進する比を実測
-  }
-}
