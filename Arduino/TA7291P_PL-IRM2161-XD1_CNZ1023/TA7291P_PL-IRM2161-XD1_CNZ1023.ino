@@ -1,4 +1,7 @@
 #include <IRremote.h>
+
+//void receiveValue(String,int *);
+
 // モータ
 //右
 const int motorR1 = 8;
@@ -24,7 +27,7 @@ int count = 0;
 const int buzzer = 6;
 int melo = 500;
 //関数のID
-int id;
+int method_id;
 
 //-----初期化-----
 void setup() {
@@ -133,7 +136,7 @@ void barricade_check() {                    //障害物検知
     CBuzzer(false);//ブザー2
     changeL = tmpL;
     changeR = tmpR;
-    if (id == 0)
+    if (method_id == 0)
       ahead();
     else
       ahead_d();
@@ -168,7 +171,7 @@ void circle(int angle) {                    //回転
 }
 
 void ahead() {                              //前進
-  id = 0;
+  method_id = 0;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
@@ -186,7 +189,7 @@ void ahead() {                              //前進
 
 
 void ahead_d() {                            //前進斜め
-  id = 1;
+  method_id = 1;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
@@ -257,13 +260,145 @@ void right(int right) {                     //右旋回
   analogWrite(PWM_motL, speedR);
   circle(right);
 }
+
+void receiveIR(String receiveValue,int *id){    //受信
+const int angle1 = 90;
+const int angle2 = 135;
+const int angle3 = 180;
+ if (receiveValue == "3873901013") {
+      Serial.println("Received_P1");
+      if (id[0] == 2) {
+        if (id[1] == 1)
+          left(angle3);
+        if (id[1] == 3)
+          left(angle1);
+        if (id[1] == 4)
+          left(angle2);
+        ahead();
+        id[1] = 2;
+      } else if (id[0] == 3) {
+        if (id[1] == 1)
+          left(angle3);
+        if (id[1] == 2)
+          right(angle2);
+        if (id[1] == 4)
+          left(angle2);
+        ahead_d();
+        id[1] = 3;
+      } else if (id[0] == 4) {
+        if (id[1] == 1)
+          left(angle3);
+        if (id[1] == 2)
+          right(angle2);
+        if (id[1] == 3)
+          right(angle1);
+        ahead();
+        id[1] = 4;
+      }
+      id[0] = 1;
+    } else if (receiveValue == "1513342804") {
+      Serial.println("Received_P2");
+      if (id[0] == 1) {
+        if (id[1] == 2)
+          left(angle3);
+        Serial.println("angle180");
+        if (id[1] == 3)
+          right(angle2);
+        if (id[1] == 4)
+          right(angle1);
+        ahead();
+        Serial.println("ahead");
+        id[1] = 2;
+      } else if (id[0] == 3) {
+        if (id[1] == 1)
+          left(angle2);
+        if (id[1] == 2)
+          left(angle3);
+        if (id[1] == 4)
+          left(angle1);
+        ahead_d();
+        id[1] = 3;
+      } else if (id[0] == 4) {
+        if (id[1] == 1)
+          left(angle2);
+        if (id[1] == 2)
+          left(angle3);
+        if (id[1] == 3)
+          right(angle2);
+        ahead();
+        id[1] = 4;
+      }
+      id[0] = 2;
+    } else if (receiveValue == "4092259158") {
+      Serial.println("Received_P3");
+      if (id[0] == 1) {
+        if (id[1] == 2)
+          left(angle2);
+        if (id[1] == 3)
+          left(angle3);
+        if (id[1] == 4)
+          right(angle2);
+        ahead_d();
+        id[1] = 1;
+      } else if (id[0] == 2) {
+        if (id[1] == 1)
+          right(angle1);
+        if (id[1] == 3)
+          left(angle3);
+        if (id[1] == 4)
+          right(angle2);
+        ahead();
+        id[1] = 2;
+      } else if (id[0]== 4) {
+        if (id[1] == 1)
+          left(angle1);
+        if (id[1] == 2)
+          left(angle2);
+        if (id[1] == 3)
+          left(angle3);
+        ahead();
+        id[1] = 4;
+      }
+      id[0]= 3;
+    } else if (receiveValue == "869376052") {
+      Serial.println("Received_P4");
+      if (id[0] == 1) {
+        if (id[1] == 2)
+          left(angle1);  //or  right(90);
+        if (id[1] == 3)
+          left(angle2);  //or  right(45);
+        if (id[1] == 4)
+          left(angle3); //or no_rotate
+        ahead();  //or  astern();
+        id[1] = 1;
+      } else if (id[0] == 2) {
+        if (id[1] == 1)
+          right(angle2);         //or left(45);
+        if (id[1] == 3)
+          left(angle2);          //or right(45);
+        if (id[1] == 4)
+          left(angle3);          //or no_rotate
+        ahead_d();               //or  astern_();
+        id[1] = 2;
+      } else if (id[0] == 3) {
+        if (id[1] == 1)
+          right(angle2);         //or left(45);
+        if (id[1] == 2)
+          left(angle1);          //or right(90);
+        if (id[1] == 4)
+          left(angle3);          //or no_rotate
+        ahead();                 //or astern();
+        id[1] = 3;
+      }
+      id[0] = 4;
+    }
+
+}
+
 //----------------
 //-----メイン-----
-int id1 = 1;
-int id2 = 2;
-int angle1 = 90;
-int angle2 = 135;
-int angle3 = 180;
+int id[] = {1,2};
+
 void loop() {
 
   if (irrecv.decode(&results)) {
@@ -274,142 +409,18 @@ void loop() {
     String receiveValue = "";
     receiveValue = (String)results.value;
     //Received_P :　これから向かう点
-    //id1          :　今いる点
-    //id2          :　前にいた点
-    if (receiveValue == "3873901013") {
-      Serial.println("Received_P1");
-      if (id1 == 2) {
-        if (id2 == 1)
-          left(angle3);
-        if (id2 == 3)
-          left(angle1);
-        if (id2 == 4)
-          left(angle2);
-        ahead();
-        id2 = 2;
-      } else if (id1 == 3) {
-        if (id2 == 1)
-          left(angle3);
-        if (id2 == 2)
-          right(angle2);
-        if (id2 == 4)
-          left(angle2);
-        ahead_d();
-        id2 = 3;
-      } else if (id1 == 4) {
-        if (id2 == 1)
-          left(angle3);
-        if (id2 == 2)
-          right(angle2);
-        if (id2 == 3)
-          right(angle1);
-        ahead();
-        id2 = 4;
-      }
-      id1 = 1;
-    } else if (receiveValue == "1513342804") {
-      Serial.println("Received_P2");
-      if (id1 == 1) {
-        if (id2 == 2)
-          left(angle3);
-        Serial.println("angle180");
-        if (id2 == 3)
-          right(angle2);
-        if (id2 == 4)
-          right(angle1);
-        ahead();
-        Serial.println("ahead");
-        id2 = 2;
-      } else if (id1 == 3) {
-        if (id2 == 1)
-          left(angle2);
-        if (id2 == 2)
-          left(angle3);
-        if (id2 == 4)
-          left(angle1);
-        ahead_d();
-        id2 = 3;
-      } else if (id1 == 4) {
-        if (id2 == 1)
-          left(angle2);
-        if (id2 == 2)
-          left(angle3);
-        if (id2 == 3)
-          right(angle2);
-        ahead();
-        id2 = 4;
-      }
-      id1 = 2;
-    } else if (receiveValue == "4092259158") {
-      Serial.println("Received_P3");
-      if (id1 == 1) {
-        if (id2 == 2)
-          left(angle2);
-        if (id2 == 3)
-          left(angle3);
-        if (id2 == 4)
-          right(angle2);
-        ahead_d();
-        id2 = 1;
-      } else if (id1 == 2) {
-        if (id2 == 1)
-          right(angle1);
-        if (id2 == 3)
-          left(angle3);
-        if (id2 == 4)
-          right(angle2);
-        ahead();
-        id2 = 2;
-      } else if (id1== 4) {
-        if (id2 == 1)
-          left(angle1);
-        if (id2 == 2)
-          left(angle2);
-        if (id2 == 3)
-          left(angle3);
-        ahead();
-        id2 = 4;
-      }
-      id1= 3;
-    } else if (receiveValue == "869376052") {
-      Serial.println("Received_P4");
-      if (id1 == 1) {
-        if (id2 == 2)
-          left(angle1);  //or  right(90);
-        if (id2 == 3)
-          left(angle2);  //or  right(45);
-        if (id2 == 4)
-          left(angle3); //or no_rotate
-        ahead();  //or  astern();
-        id2 = 1;
-      } else if (id1 == 2) {
-        if (id2 == 1)
-          right(angle2);         //or left(45);
-        if (id2 == 3)
-          left(angle2);          //or right(45);
-        if (id2 == 4)
-          left(angle3);          //or no_rotate
-        ahead_d();               //or  astern_();
-        id2 = 2;
-      } else if (id1 == 3) {
-        if (id2 == 1)
-          right(angle2);         //or left(45);
-        if (id2 == 2)
-          left(angle1);          //or right(90);
-        if (id2 == 4)
-          left(angle3);          //or no_rotate
-        ahead();                 //or astern();
-        id2 = 3;
-      }
-      id1 = 4;
-    }
+    //id[0]          :　今いる点
+    //id[1]          :　前にいた点
+    
+    receiveIR(receiveValue,id);
+
     Serial.println("brake() ni hairimasu.");
     brake();
     Serial.print("ima P");
-    Serial.print(id2);
+    Serial.print(id[1]);
     Serial.println("ni irun.");
     Serial.print("P");
-    Serial.print(id1);
+    Serial.print(id[0]);
     Serial.println("kara kitan.");
     Serial.println("----------");
 
