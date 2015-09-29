@@ -22,7 +22,7 @@ decode_results results;
 int volatile changeL = 0;
 int volatile changeR = 0;
 //測距モジュール
-int count = 0;
+int count = 0;//pin番号ではない
 //ブザー
 const int buzzer = 6;
 int melo = 500;
@@ -206,26 +206,27 @@ void ahead_d() {                            //前進斜め
 }
 
 void astern(int changechange) {             //後進
-  Serial.println("start astern()");
+  Serial.println("\t\tstart astern()");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
-  Serial.println("while ni hairimasu");
+  Serial.println("\t\twhile ni hairimasu");
   while (1) {
-    Serial.println("while");
+    Serial.println("\t\t\twhile");
     motor_speed();
     if (changeL >= changechange || changeR >= changechange)
       break;
   }
-  Serial.println("break");
+  Serial.println("\t\tbreak");
   changeL = changeR = 0;
+  Serial.println("\t\tastern() kara demasu");
 }
 
 void brake() {                              //ブレーキ
-  Serial.println("start brake()");
+  Serial.println("\tstart brake()");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
@@ -234,12 +235,13 @@ void brake() {                              //ブレーキ
   if (changechange < changeR)
     changechange = changeR;
   changeL = changeR = 0;
-  Serial.println("astern() ni hairimasu");
+  Serial.println("\tastern() ni hairimasu");
   astern(changechange);
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
+  Serial.println("\tbrake() kara demasu");
 }
 
 void left(int left) {                       //左旋回
@@ -265,7 +267,7 @@ void receiveIR(String receiveValue,int *id){    //受信
 const int angle1 = 90;
 const int angle2 = 135;
 const int angle3 = 180;
- if (receiveValue == "3873901013") {
+ if (receiveValue == "3887053538") {
       Serial.println("Received_P1");
       if (id[0] == 2) {
         if (id[1] == 1)
@@ -416,6 +418,7 @@ void loop() {
 
     Serial.println("brake() ni hairimasu.");
     brake();
+    Serial.println("dousa syuuryou desu.\n");
     Serial.print("ima P");
     Serial.print(id[1]);
     Serial.println("ni irun.");
