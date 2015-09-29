@@ -73,7 +73,7 @@ void photo_changingR() {                    //フォトインタラプタ右
 //----------------
 //-メインで使う関数-
 
-void cw(int melo){
+void cw(int melo){                            //トンツートンツー・ー・ー
   int melo_speed = 1;
   digitalWrite(buzzer,HIGH);
   delay(melo * melo_speed);
@@ -82,15 +82,17 @@ void cw(int melo){
 }
 
 void CBuzzer(bool b) {                       //ブザー
+  Serial.print("\t\t\tenterd CBuzzer"+b);
+  Serial.println(")");
   int count = 0;
-  while (count < 8) {
-    //tone(buzzer, 131, melo); //ド
-    digitalWrite(buzzer,HIGH);
-    delay(melo);
-    digitalWrite(buzzer,LOW);
-    delay(melo);
-    count++;
-  }
+//  while (count < 8) {
+//    //tone(buzzer, 131, melo); //ド
+//    digitalWrite(buzzer,HIGH);
+//    delay(melo);
+//    digitalWrite(buzzer,LOW);
+//    delay(melo);
+//    count++;
+//  }
   if(b){
     cw(100);cw(100);cw(100);//ブザー1
     delay(200);
@@ -104,12 +106,14 @@ void CBuzzer(bool b) {                       //ブザー
     cw(300);cw(300);cw(300);
     b = true;
   }
+  Serial.print("\t\t\texit CBuzzer"+b);
+  Serial.println(")");
 }
 
 void barricade_check() {                    //障害物検知
   int distance;
   distance = (6762 / (analogRead(0) - 9)) - 4;
-  Serial.print(distance);
+  Serial.print("\t\t"+distance);
   Serial.println("cm");
 
   if (distance < 80) 
@@ -118,22 +122,26 @@ void barricade_check() {                    //障害物検知
     count = 0;
       
   if(count > 10) {
-    Serial.println("!!!STOP!!!");
+    Serial.println("\t\t!!!STOP!!!");
     int tmpL = changeL;
     int tmpR = changeR;
     brake();
+    Serial.println("\t\tenter CBuzzer(true)");
     CBuzzer(true);//ブザー1
+    Serial.println("\t\texited CBuzzer(true)");
     while (1){
       distance = (6762 / (analogRead(0) - 9)) - 4;
-      Serial.print(distance);
+      Serial.print("\t\t\t"+distance);
       Serial.println("cm");
       if ((6762 / (distance - 9)) - 4 > 80)
         count--;
       if(count < 1)
         break;
     }
-    Serial.println("!!!RESTART!!!");    
+    Serial.println("\t\t!!!RESTART!!!");
+    Serial.println("\t\tenter CBuzzer(false)");    
     CBuzzer(false);//ブザー2
+    Serial.println("\t\texited CBuzzer(false)");
     changeL = tmpL;
     changeR = tmpR;
     if (method_id == 0)
@@ -149,6 +157,8 @@ void motor_speed() {                        //モータ速度呼び出し
 }
 
 void circle(int angle) {                    //回転
+  Serial.print("\t\t\tentered circle("+angle);
+  Serial.println(")");
   if (angle == 180)
     while (1) {
       motor_speed();
@@ -168,9 +178,12 @@ void circle(int angle) {                    //回転
         break;
     }
   changeL = changeR = 0;
+  Serial.print("\t\t\texit circle("+angle);
+  Serial.println(")");
 }
 
 void ahead() {                              //前進
+  Serial.println("\t\tentered ahead()");
   method_id = 0;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -178,17 +191,21 @@ void ahead() {                              //前進
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
+  Serial.println("\t\tenter while(1)");
   while (1) {
     motor_speed();
     barricade_check();
     if (changeL > 682 || changeR > 682)
       break;
   }
+  Serial.println("\t\texited while(1)");
   changeL = changeR = 0;
+  Serial.println("\t\texit ahead())");
 }
 
 
 void ahead_d() {                            //前進斜め
+  Serial.println("\t\tentered ahead_d()");
   method_id = 1;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -196,37 +213,43 @@ void ahead_d() {                            //前進斜め
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
+  Serial.println("\t\tenter while(1)");
   while (1) {
     motor_speed();
     barricade_check();
     if (changeL > 964 || changeR > 964)
       break;
   }
+  Serial.println("\t\texited while(1)");
   changeL = changeR = 0;
+  Serial.println("\t\texit ahead_d())");
 }
 
 void astern(int changechange) {             //後進
-  Serial.println("\t\tstart astern()");
+  Serial.print("\t\tentered astern("+changechange);
+  Serial.println(")");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
-  Serial.println("\t\twhile ni hairimasu");
+  Serial.println("\t\tenter while(1)");
   while (1) {
-    Serial.println("\t\t\twhile");
     motor_speed();
-    if (changeL >= changechange || changeR >= changechange)
+    if (changeL >= changechange || changeR >= changechange){
+      Serial.println("\t\t\texited while(1)");
       break;
+    }
   }
-  Serial.println("\t\tbreak");
+  Serial.println("\t\texited while(1)");
   changeL = changeR = 0;
-  Serial.println("\t\tastern() kara demasu");
+  Serial.print("\t\texit astern("+changechange);
+  Serial.println(")");
 }
 
 void brake() {                              //ブレーキ
-  Serial.println("\tstart brake()");
+  Serial.println("\tentered brake()");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
@@ -235,32 +258,51 @@ void brake() {                              //ブレーキ
   if (changechange < changeR)
     changechange = changeR;
   changeL = changeR = 0;
-  Serial.println("\tastern() ni hairimasu");
+  Serial.print("\tenter astern("+changechange);
+  Serial.println(")");
   astern(changechange);
+  Serial.print("\texited astern("+changechange);
+  Serial.println(")");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
-  Serial.println("\tbrake() kara demasu");
+  Serial.println("\texit brake()");
 }
 
 void left(int left) {                       //左旋回
+  Serial.print("\t\tentered left("+left);
+  Serial.println(")");
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
+  Serial.print("\t\tenter circle("+left);
+  Serial.println(")");
   circle(left);
+  Serial.print("\t\texited circle("+left);
+  Serial.println(")");
+  Serial.print("\t\texit circle("+left);
+  Serial.println(")");
 }
 void right(int right) {                     //右旋回
+  Serial.print("\t\tentered right("+right);
+  Serial.println(")");
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
   analogWrite(PWM_motR, speedL);
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
+  Serial.print("\t\tenter circle("+right);
+  Serial.println(")");
   circle(right);
+  Serial.print("\t\texited circle("+right);
+  Serial.println(")");
+  Serial.print("\t\texit circle("+right);
+  Serial.println(")");
 }
 
 void receiveIR(String receiveValue,int *id){    //受信
@@ -268,7 +310,7 @@ const int angle1 = 90;
 const int angle2 = 135;
 const int angle3 = 180;
  if (receiveValue == "3887053538") {
-      Serial.println("Received_P1");
+      Serial.println("\tReceived_P1");
       if (id[0] == 2) {
         if (id[1] == 1)
           left(angle3);
@@ -299,17 +341,17 @@ const int angle3 = 180;
       }
       id[0] = 1;
     } else if (receiveValue == "1513342804") {
-      Serial.println("Received_P2");
+      Serial.println("\tReceived_P2");
       if (id[0] == 1) {
         if (id[1] == 2)
           left(angle3);
-        Serial.println("angle180");
+        Serial.println("\tangle180");
         if (id[1] == 3)
           right(angle2);
         if (id[1] == 4)
           right(angle1);
         ahead();
-        Serial.println("ahead");
+        Serial.println("\tahead");
         id[1] = 2;
       } else if (id[0] == 3) {
         if (id[1] == 1)
@@ -332,7 +374,7 @@ const int angle3 = 180;
       }
       id[0] = 2;
     } else if (receiveValue == "4092259158") {
-      Serial.println("Received_P3");
+      Serial.println("\tReceived_P3");
       if (id[0] == 1) {
         if (id[1] == 2)
           left(angle2);
@@ -363,7 +405,7 @@ const int angle3 = 180;
       }
       id[0]= 3;
     } else if (receiveValue == "869376052") {
-      Serial.println("Received_P4");
+      Serial.println("\tReceived_P4");
       if (id[0] == 1) {
         if (id[1] == 2)
           left(angle1);  //or  right(90);
