@@ -53,20 +53,20 @@ void photo_changingL() {                    //フォトインタラプタ左
   changeL++;
   Serial.print(changeL);
   Serial.println("times_changed_L");
-  if (changeL > changeR) {
-    speedL--;
-    speedR = 255;//後で直進する比を実測
-  }
+//  if (changeL > changeR) {
+//    speedL--;
+//    speedR = 255;//後で直進する比を実測
+//  }
 }
 
 void photo_changingR() {                    //フォトインタラプタ右
   changeR++;
   Serial.print(changeR);
   Serial.println("times_changed_R");
-  if (changeR > changeL) {
-    speedR--;
-    speedL = 255;//後で直進する比を実測
-  }
+//  if (changeR > changeL) {
+//    speedR--;
+//    speedL = 255;//後で直進する比を実測
+//  }
 }
 //----------------
 //-メインで使う関数-
@@ -92,15 +92,15 @@ void CBuzzer(bool b) {                       //ブザー
 //  }
   if(b){
     cw(100);cw(100);cw(100);//ブザー1
-    delay(200);
-    cw(300);cw(300);cw(300);
-    delay(200);
-    cw(100);cw(100);cw(100);
+//    delay(200);
+//    cw(300);cw(300);cw(300);
+//    delay(200);
+//    cw(100);cw(100);cw(100);
     b = false;
   }else{
     cw(300);cw(300);cw(100);//ブザー2
-    delay(200);
-    cw(300);cw(300);cw(300);
+//    delay(200);
+//    cw(300);cw(300);cw(300);
     b = true;
   }
   Serial.println("\t\t\texit CBuzzer"+(String)b+")");
@@ -155,7 +155,8 @@ void circle(int angle) {                    //回転
   if (angle == 180)
     while (1) {
       motor_speed();
-      if (changeL > 19 || changeR > 19)
+//      if (changeL > 19 || changeR > 19)
+if (changeL > 12 || changeR > 12)
         break;
     }
   else if (angle == 135)
@@ -454,7 +455,7 @@ void loop() {
   }
   delay(1000);
   
-  Serial.print("speedL:"+(String)speedL+" speedR:"+(String)speedR);
+  Serial.println("speedL:"+(String)speedL+" speedR:"+(String)speedR);
   
 }
 //---------------
