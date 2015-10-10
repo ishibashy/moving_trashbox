@@ -153,23 +153,21 @@ void motor_speed() {                        //モータ速度更新
 void circle(int angle) {                    //回転
   Serial.println("\t\t\tentered circle("+(String)angle+")");
   if (angle == 180)
-    while (1) {
-      motor_speed();
+//    while (1) {
+//      motor_speed();
 //      if (changeL > 19 || changeR > 19)
-if (changeL > 12 || changeR > 12)
-        break;
+//          break;
+//    }
+    while (changeL < 12 || changeR < 12) {
+      motor_speed();
     }
   else if (angle == 135)
-    while (1) {
+    while (changeL < 14 || changeR < 14) {
       motor_speed();
-      if (changeL > 14 || changeR > 14)
-        break;
     }
   else
-    while (1) {
+    while (changeL < 9 || changeR < 9) {
       motor_speed();
-      if (changeL > 9 || changeR > 9)
-        break;
     }
   changeL = changeR = 0;
   Serial.println("\t\t\texit circle("+(String)angle+")");
