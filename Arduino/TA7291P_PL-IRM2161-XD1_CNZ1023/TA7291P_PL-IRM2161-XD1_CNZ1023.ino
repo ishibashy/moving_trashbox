@@ -26,6 +26,9 @@ const int buzzer = 6;
 int melo = 500;
 //関数のID
 int method_id;
+//既知のIRかどうかの判別
+bool knownIR = false;
+
 
 //-----初期化-----
 void setup() {
@@ -239,6 +242,10 @@ void astern(int changechange) {             //後進
 
 void brake() {                              //ブレーキ
   Serial.println("\tentered brake()");
+  if(knownIR == false){
+    Serial.println("\texit brake()for a unknown IR");
+    return;
+  }
   digitalWrite(motorR1, LOW);
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
@@ -285,10 +292,11 @@ void right(int right) {                     //右旋回
 }
 
 void receiveIR(String receiveValue,int *id){    //受信
-Serial.println("\tentered receiveValue()");
+Serial.println("\tentered receiveIR()");
 const int angle1 = 90;
 const int angle2 = 135;
 const int angle3 = 180;
+knownIR = true;
  if (receiveValue == "3887053538") {
       Serial.println("\tReceived_P1");
       if (id[0] == 2) {
@@ -418,6 +426,9 @@ const int angle3 = 180;
         id[1] = 3;
       }
       id[0] = 4;
+    } else {
+      knownIR = false;
+      Serial.println("\tunknown IR received ");
     }
 Serial.println("\texit receiveValue()");
 }
@@ -452,7 +463,6 @@ void loop() {
     irrecv.resume();
   }
   delay(1000);
-  
   Serial.println("speedL:"+(String)speedL+" speedR:"+(String)speedR);
   
 }
