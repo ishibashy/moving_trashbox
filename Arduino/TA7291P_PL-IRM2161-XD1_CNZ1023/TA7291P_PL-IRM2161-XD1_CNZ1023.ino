@@ -1,4 +1,3 @@
-//P1のIR値をテレビリモコンに変えている。
 //測距のモジュール、何もない状態で17cm前後となる問題がある。
 
 #include <IRremote.h>
@@ -341,8 +340,8 @@ knownIR = true;
         id[1] = 4;
       }
       id[0] = 1;
-    //} else if (receiveValue == "1513342804") {
-    } else if (receiveValue == "4012159527") {
+    } else if (receiveValue == "1513342804") {
+    //} else if (receiveValue == "4012159527") {
       Serial.println("\tReceived_P2");
       if (id[0] == 1) {
         if (id[1] == 2){
