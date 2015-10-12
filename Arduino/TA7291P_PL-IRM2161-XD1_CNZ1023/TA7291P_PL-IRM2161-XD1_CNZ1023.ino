@@ -1,4 +1,5 @@
 //P1のIR値をテレビリモコンに変えている。
+//測距のモジュール、何もない状態で17cm前後となる問題がある。
 
 #include <IRremote.h>
 
@@ -119,12 +120,12 @@ void barricade_check() {                    //障害物検知
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.println("\t\t"+(String)distance+"cm");
 
-  if (distance < 80) 
+  if (distance < 16) 
     count++;
   else
     count = 0;
       
-  if(count > 20) {
+  if(count > 4) {
     Serial.println("\t\t!!!STOP!!!");
     int tmpL = changeL;
     int tmpR = changeR;
@@ -135,8 +136,9 @@ void barricade_check() {                    //障害物検知
     while (count >= 1){
       distance = (6762 / (analogRead(0) - 9)) - 4;
       Serial.println("\t\t\t"+(String)distance+"cm");
-      if (distance > 80)
+      if (distance > 15)
         count--;
+      delay(100);
     }
     Serial.println("\t\t!!!RESTART!!!");
     Serial.println("\t\tenter CBuzzer(false)");    
@@ -195,6 +197,7 @@ void ahead() {                              //前進
   while (changeL < 682 && changeR < 682) {
     motor_speed();
     barricade_check();
+    delay(100);
   }
   Serial.println("\t\texited while(1)");
   digitalWrite(DMMDL, LOW);
@@ -233,6 +236,7 @@ void astern(int changechange) {             //後進
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
   Serial.println("\t\tenter while(1)");
+  Serial.print((String)changechange+":"+(String)changeL);
   while (1) {
     motor_speed();
     if (changeL >= changechange || changeR >= changechange){
@@ -255,6 +259,8 @@ void brake() {                              //ブレーキ
   digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
+  changeL = changeR = 0;
+  delay(3000);
   int changechange = changeL;
   if (changechange < changeR)
     changechange = changeR;
