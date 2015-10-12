@@ -201,8 +201,8 @@ void ahead() {                              //前進
   }
   Serial.println("\t\texited while(1)");
   digitalWrite(DMMDL, LOW);
-  changeL = changeR = 0;
   Serial.println("\t\texit ahead())");
+  return;
 }
 
 
@@ -223,8 +223,8 @@ void ahead_d() {                            //前進斜め
   }
   Serial.println("\t\texited while(1)");
   digitalWrite(DMMDL, LOW);
-  changeL = changeR = 0;
   Serial.println("\t\texit ahead_d())");
+  return;
 }
 
 void astern(int changechange) {             //後進
@@ -235,8 +235,8 @@ void astern(int changechange) {             //後進
   digitalWrite(motorL1, HIGH);
   digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
+  Serial.println("\t\tThe operation by inertia:"+(String)changechange);
   Serial.println("\t\tenter while(1)");
-  Serial.print((String)changechange+":"+(String)changeL);
   while (1) {
     motor_speed();
     if (changeL >= changechange || changeR >= changechange){
@@ -260,6 +260,7 @@ void brake() {                              //ブレーキ
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
   changeL = changeR = 0;
+  Serial.println("wait for 3 seconds.");
   delay(3000);
   int changechange = changeL;
   if (changechange < changeR)
@@ -355,7 +356,7 @@ knownIR = true;
           right(angle1);
         Serial.println("\tenter ahead()");  
         ahead();
-        Serial.println("\texied ahead()");
+        Serial.println("\texited ahead()");
         id[1] = 1;
       } else if (id[0] == 3) {
         if (id[1] == 1)
