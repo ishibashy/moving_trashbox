@@ -1,3 +1,5 @@
+//P1のIR値をテレビリモコンに変えている。
+
 #include <IRremote.h>
 
 // モータ
@@ -21,6 +23,7 @@ int volatile changeL = 0;
 int volatile changeR = 0;
 //測距モジュール
 int count = 0;//pin番号ではない
+const int DMMDL = 5;
 //ブザー
 const int buzzer = 6;
 int melo = 500;
@@ -44,6 +47,8 @@ void setup() {
   //フォトインタラプタ
   attachInterrupt(1, photo_changingL, CHANGE);
   attachInterrupt(0, photo_changingR, CHANGE);
+  //測距モジュール
+  pinMode(DMMDL, OUTPUT);
   //ブザー
   pinMode(buzzer, OUTPUT);
   
@@ -130,7 +135,7 @@ void barricade_check() {                    //障害物検知
     while (1){
       distance = (6762 / (analogRead(0) - 9)) - 4;
       Serial.println("\t\t\t"+(String)distance+"cm");
-      if ((6762 / (distance - 9)) - 4 > 80)
+      if (distance > 80)
         count--;
       if(count < 1)
         break;
@@ -163,6 +168,7 @@ void circle(int angle) {                    //回転
 //    }
     while (changeL < 12 || changeR < 12) {
       motor_speed();
+      Serial.println("changeL="+(String)changeL+":changeR="+(String)changeR+":");
     }
   else if (angle == 135)
     while (changeL < 14 || changeR < 14) {
@@ -178,6 +184,7 @@ void circle(int angle) {                    //回転
 
 void ahead() {                              //前進
   Serial.println("\t\tentered ahead()");
+  digitalWrite(DMMDL, HIGH);
   method_id = 0;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -193,6 +200,7 @@ void ahead() {                              //前進
       break;
   }
   Serial.println("\t\texited while(1)");
+  digitalWrite(DMMDL, LOW);
   changeL = changeR = 0;
   Serial.println("\t\texit ahead())");
 }
@@ -200,6 +208,7 @@ void ahead() {                              //前進
 
 void ahead_d() {                            //前進斜め
   Serial.println("\t\tentered ahead_d()");
+  digitalWrite(DMMDL, HIGH);
   method_id = 1;
   digitalWrite(motorR1, HIGH);
   digitalWrite(motorR2, LOW);
@@ -215,6 +224,7 @@ void ahead_d() {                            //前進斜め
       break;
   }
   Serial.println("\t\texited while(1)");
+  digitalWrite(DMMDL, LOW);
   changeL = changeR = 0;
   Serial.println("\t\texit ahead_d())");
 }
@@ -328,7 +338,8 @@ knownIR = true;
         id[1] = 4;
       }
       id[0] = 1;
-    } else if (receiveValue == "1513342804") {
+    //} else if (receiveValue == "1513342804") {
+    } else if (receiveValue == "4012159527") {
       Serial.println("\tReceived_P2");
       if (id[0] == 1) {
         if (id[1] == 2){
