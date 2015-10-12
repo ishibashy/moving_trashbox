@@ -132,13 +132,11 @@ void barricade_check() {                    //障害物検知
     Serial.println("\t\tenter CBuzzer(true)");
     CBuzzer(true);//ブザー1
     Serial.println("\t\texited CBuzzer(true)");
-    while (1){
+    while (count >= 1){
       distance = (6762 / (analogRead(0) - 9)) - 4;
       Serial.println("\t\t\t"+(String)distance+"cm");
       if (distance > 80)
         count--;
-      if(count < 1)
-        break;
     }
     Serial.println("\t\t!!!RESTART!!!");
     Serial.println("\t\tenter CBuzzer(false)");    
@@ -166,16 +164,17 @@ void circle(int angle) {                    //回転
 //      if (changeL > 19 || changeR > 19)
 //          break;
 //    }
-    while (changeL < 12 || changeR < 12) {
+    while (changeL < 12 && changeR < 12) {
       motor_speed();
       Serial.println("changeL="+(String)changeL+":changeR="+(String)changeR+":");
+      delay(1000);    
     }
   else if (angle == 135)
-    while (changeL < 14 || changeR < 14) {
+    while (changeL < 14 && changeR < 14) {
       motor_speed();
     }
   else
-    while (changeL < 9 || changeR < 9) {
+    while (changeL < 9 && changeR < 9) {
       motor_speed();
     }
   changeL = changeR = 0;
@@ -193,11 +192,9 @@ void ahead() {                              //前進
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
   Serial.println("\t\tenter while(1)");
-  while (1) {
+  while (changeL < 682 && changeR < 682) {
     motor_speed();
     barricade_check();
-    if (changeL > 682 || changeR > 682)
-      break;
   }
   Serial.println("\t\texited while(1)");
   digitalWrite(DMMDL, LOW);
@@ -217,11 +214,9 @@ void ahead_d() {                            //前進斜め
   digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
   Serial.println("\t\tenter while(1)");
-  while (1) {
+  while (changeL < 964 && changeR < 964) {
     motor_speed();
     barricade_check();
-    if (changeL > 964 || changeR > 964)
-      break;
   }
   Serial.println("\t\texited while(1)");
   digitalWrite(DMMDL, LOW);
@@ -303,6 +298,7 @@ void right(int right) {                     //右旋回
 
 void receiveIR(String receiveValue,int *id){    //受信
 Serial.println("\tentered receiveIR()");
+changeL = changeR = 0;
 const int angle1 = 90;
 const int angle2 = 135;
 const int angle3 = 180;
