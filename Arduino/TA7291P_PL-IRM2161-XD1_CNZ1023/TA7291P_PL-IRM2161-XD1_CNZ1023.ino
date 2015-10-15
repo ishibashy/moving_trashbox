@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 //測距のモジュール、何もない状態で20cm前後となる問題がある。
+=======
+//測距のモジュール、何もない状態で17cm前後となる問題がある。
+>>>>>>> origin/master
 
 #include <IRremote.h>
 
@@ -340,8 +344,13 @@ knownIR = true;
         id[1] = 4;
       }
       id[0] = 1;
+<<<<<<< HEAD
 //    } else if (receiveValue == "1513342804") {
       } else if (receiveValue == "50183235") {
+=======
+    } else if (receiveValue == "1513342804") {
+    //} else if (receiveValue == "4012159527") {
+>>>>>>> origin/master
       Serial.println("\tReceived_P2");
       if (id[0] == 1) {
         if (id[1] == 2){
