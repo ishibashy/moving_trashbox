@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 //測距のモジュール、何もない状態で20cm前後となる問題がある。
-=======
-//測距のモジュール、何もない状態で17cm前後となる問題がある。
->>>>>>> origin/master
-
 #include <IRremote.h>
 
 // モータ
@@ -25,12 +20,16 @@ decode_results results;
 //フォトインタラプタ、change回数
 int changeL = 0;
 int changeR = 0;
-const int counterL = 4;
+int valL1 = HIGH;
+int valL2 = HIGH;
+int valR1 = HIGH;
+int valR2 = HIGH;
+const int counterL = 3;
+const int counterR = 4;
 //測距モジュール
 int count = 0;//pin番号ではない
 const int DMMDL = 5;
-int valL1 = HIGH;
-int valL2 = HIGH;
+
 //ブザー
 const int buzzer = 6;
 int melo = 500;
@@ -63,18 +62,18 @@ void setup() {
 //-メインで使う関数-
 
 
-void photo_changingL() {                    //フォトインタラプタ左
+void photo_changing() {                    //フォトインタラプタ
   valL1 = digitalRead(counterL);
-  if(valL1 == HIGH && valL2 == HIGH){
-    while(digitalRead(counterL) == HIGH);
-    valL2 = LOW;
-    changeL++;
-    Serial.println((String)changeL+"times_changed!");
-  }else if(valL2 == LOW){
-    while(digitalRead(counterL) == LOW);
-    valL2 = HIGH;
-    changeL++;
-    Serial.println((String)changeL+"times_changed!!!");
+  valR1 = digitalRead(counterR);
+  if(valL1 != valL2){
+     valL2 = valL1;
+     changeL++;
+     Serial.println("L is changed "+(String)changeL+" times.");
+  }
+  if(valR1 != valR2){
+     valR2 = valR1;
+     changeR++;
+     Serial.println("R is changed "+(String)changeR+" times.");
   }
 }
 
@@ -167,17 +166,17 @@ void circle(int angle) {                    //回転
 //    }
     while (changeL < 12 && changeR < 12) {
       motor_speed();
-      photo_changingL();
+      photo_changing();
     }
   else if (angle == 135)
     while (changeL < 14 && changeR < 14) {
       motor_speed();
-      photo_changingL();
+      photo_changing();
     }
   else
     while (changeL < 9 && changeR < 9) {
       motor_speed();
-      photo_changingL();
+      photo_changing();
     }
   changeL = changeR = 0;
   Serial.println("\t\t\texit circle("+(String)angle+")");
@@ -196,7 +195,7 @@ void ahead() {                              //前進
   Serial.println("\t\tenter while(1)");
   while (changeL < 682 && changeR < 682) {
     motor_speed();
-    photo_changingL();
+    photo_changing();
     barricade_check();
     delay(100);
   }
@@ -220,7 +219,7 @@ void ahead_d() {                            //前進斜め
   Serial.println("\t\tenter while(1)");
   while (changeL < 964 && changeR < 964) {
     motor_speed();
-    photo_changingL();
+    photo_changing();
     barricade_check();
   }
   Serial.println("\t\texited while(1)");
@@ -241,7 +240,7 @@ void astern(int changechange) {             //後進
   Serial.println("\t\tenter while(1)");
   while (1) {
     motor_speed();
-    photo_changingL();
+    photo_changing();
     if (changeL >= changechange || changeR >= changechange){
       Serial.println("\t\t\texited while(1)");
       break;
@@ -344,13 +343,9 @@ knownIR = true;
         id[1] = 4;
       }
       id[0] = 1;
-<<<<<<< HEAD
-//    } else if (receiveValue == "1513342804") {
-      } else if (receiveValue == "50183235") {
-=======
-    } else if (receiveValue == "1513342804") {
-    //} else if (receiveValue == "4012159527") {
->>>>>>> origin/master
+
+    //} else if (receiveValue == "1513342804") {
+    } else if (receiveValue == "4012159527") {
       Serial.println("\tReceived_P2");
       if (id[0] == 1) {
         if (id[1] == 2){
