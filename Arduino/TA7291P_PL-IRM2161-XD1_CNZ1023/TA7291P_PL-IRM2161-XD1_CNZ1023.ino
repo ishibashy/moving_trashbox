@@ -24,8 +24,8 @@ int valL1 = HIGH;
 int valL2 = HIGH;
 int valR1 = HIGH;
 int valR2 = HIGH;
-const int counterL = 3;
-const int counterR = 4;
+const int counterL = 2;
+const int counterR = 3;
 //測距モジュール
 int count = 0;//pin番号ではない
 const int DMMDL = 5;
@@ -87,7 +87,7 @@ void cw(int melo){                            //トンツートンツー・ー�
 }
 
 void CBuzzer(bool b) {                       //ブザー
-  Serial.print("\t\t\tenterd CBuzzer"+(String)b+")");
+  Serial.println("\t\t\tentered CBuzzer("+(String)b+")");
 //  int count = 0;
 //  while (count < 8) {
 //    //tone(buzzer, 131, melo); //ド
@@ -110,7 +110,7 @@ void CBuzzer(bool b) {                       //ブザー
 //    cw(300);cw(300);cw(300);
     b = true;
   }
-  Serial.println("\t\t\texit CBuzzer"+(String)b+")");
+  Serial.println("\t\t\texit CBuzzer("+(String)b+")");
 }
 
 void barricade_check() {                    //障害物検知
@@ -118,7 +118,7 @@ void barricade_check() {                    //障害物検知
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.println("\t\t"+(String)distance+"cm");
 
-  if (distance < 16) 
+  if (distance < 18) 
     count++;
   else
     count = 0;
@@ -344,8 +344,8 @@ knownIR = true;
       }
       id[0] = 1;
 
-    //} else if (receiveValue == "1513342804") {
-    } else if (receiveValue == "4012159527") {
+    } else if (receiveValue == "1513342804") {
+    //} else if (receiveValue == "4012159527") {
       Serial.println("\tReceived_P2");
       if (id[0] == 1) {
         if (id[1] == 2){
