@@ -164,6 +164,15 @@ void motor_speed() {                        //モータ速度更新
   analogWrite(PWM_motR, speedR);
 }
 
+void changeCount(){
+        valL1 = digitalRead(counterL);
+        valR1 = digitalRead(counterR);
+        if(valL1 != valL2){
+          valL2 = valL1;
+          changeL++;
+        }
+  }
+  
 void circle(int angle) {                    //回転
   //analogWrite(PWM_motL, 150);
   //analogWrite(PWM_motR, 150);
@@ -179,18 +188,13 @@ void circle(int angle) {                    //回転
 //      photo_changing();
 //    }
       while ( changeL < 18 ){
-        valL1 = digitalRead(counterL);
-        valR1 = digitalRead(counterR);
-        if(valL1 != valL2){
-          valL2 = valL1;
-          changeL++;
-        }
-          analogWrite(PWM_motL, 0);
-          analogWrite(PWM_motR, 0);
+          changeCount();
+          speedL = speedR = 0;
+          motor_speed();
           delay(100);
-          //koko
-          analogWrite(PWM_motL, 150);
-          analogWrite(PWM_motR, 150);
+          changeCount();
+          speedL = speedR = 150;
+          motor_speed();
           delay(100);
 //        valL1 = digitalRead(counterL);
 //        valR1 = digitalRead(counterR);
