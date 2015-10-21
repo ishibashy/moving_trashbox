@@ -6,10 +6,10 @@ const int PWM_motR = 10;
 //左
 const int motorL1 = 11;
 const int motorL2 = 12;
-const int PWM_motL = 13;
+const int PWM_motL = 5;
 //スピード
 int speedL = 255;//後で直進する比を実測、255:237とか
-int speedR = 255;
+int speedR = 85;
 //フォトインタラプタ、change回数
 int volatile changeL = 0;
 int volatile changeR = 0;
@@ -18,7 +18,7 @@ int id;
 
 //-----初期化-----
 void setup() {
-  delay(10000);
+  delay(1000);
   
   // モータ
   //右
@@ -30,8 +30,7 @@ void setup() {
  
   Serial.begin(9600);
 
-  ahead();
-  
+
 }
 //----------------
 
@@ -57,19 +56,19 @@ void circle(int angle) {                    //回転
   if (angle == 180)
     while (1) {
       motor_speed();
-      if (changeL > 19 || changeR > 19)
+      if (changeL > 12 || changeR > 12)
         break;
     }
   else if (angle == 135)
     while (1) {
       motor_speed();
-      if (changeL > 14 || changeR > 14)
+      if (changeL > 9 || changeR > 9)
         break;
     }
   else
     while (1) {
       motor_speed();
-      if (changeL > 9 || changeR > 9)
+      if (changeL > 6 || changeR > 6)
         break;
     }
   changeL = changeR = 0;
@@ -77,17 +76,23 @@ void circle(int angle) {                    //回転
 
 void ahead() {                              //前進
   id = 0;
-  digitalWrite(motorR1, HIGH);
-  digitalWrite(motorR2, LOW);
+//  digitalWrite(motorR1, HIGH);
+//  digitalWrite(motorR2, LOW);
+//  analogWrite(PWM_motR, speedL);
+//  digitalWrite(motorL1, LOW);
+//  digitalWrite(motorL2, HIGH);
+//  analogWrite(PWM_motL, speedR);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, LOW);
-  digitalWrite(motorL2, HIGH);
+  digitalWrite(motorL1, HIGH);
+  digitalWrite(motorL2, LOW);
   analogWrite(PWM_motL, speedR);
-  while (1) {
-    motor_speed();
-    if (changeL > 682 || changeR > 682)
-      break;
-  }
+//  while (1) {
+//    motor_speed();
+//    if (changeL > 137 || changeR > 137)
+//      break;
+//  }
   changeL = changeR = 0;
 }
 
@@ -172,9 +177,10 @@ int angle2 = 135;
 int angle3 = 180;
 void loop() {
 
-  delay(10000);
+  ahead();
+  delay(30000);
   brake();
-
+  delay(10000);
 
 }
 //---------------

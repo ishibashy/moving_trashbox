@@ -1,18 +1,17 @@
-//測距のモジュール、何もない状態で20cm前後となる問題がある。
 #include <IRremote.h>
 
 // モータ
-//右
-const int motorR1 = 8;
-const int motorR2 = 9;
-const int PWM_motR = 10;
 //左
-const int motorL1 = 11;
-const int motorL2 = 12;
-const int PWM_motL = 13;
+const int motorL1 = 8;
+const int motorL2 = 9;
+const int PWM_motL = 10;
+//右
+const int motorR1 = 11;
+const int motorR2 = 12;
+const int PWM_motR = 5;
 //スピード
-int speedL = 255;//後で直進する比を実測、255:237とか
-int speedR = 255;
+int speedL = 120;
+int speedR = 150;
 //IRモジュール
 const int IRMDL = 7;
 IRrecv irrecv(IRMDL);
@@ -28,7 +27,6 @@ const int counterL = 2;
 const int counterR = 3;
 //測距モジュール
 int count = 0;//pin番号ではない
-const int DMMDL = 5;
 
 //ブザー
 const int buzzer = 6;
@@ -43,17 +41,16 @@ bool knownIR = false;
 void setup() {
   // モータ
   //右
-  pinMode(motorR1, OUTPUT);
-  pinMode(motorR2, OUTPUT);
-  //左
   pinMode(motorL1, OUTPUT);
   pinMode(motorL2, OUTPUT);
+  //左
+  pinMode(motorR1, OUTPUT);
+  pinMode(motorR2, OUTPUT);
   //IRモジュール
   irrecv.enableIRIn();
   //フォトインタラプタ
   pinMode(counterL, INPUT);
-  //測距モジュール
-  pinMode(DMMDL, OUTPUT);
+  pinMode(counterR, INPUT);
   //ブザー
   pinMode(buzzer, OUTPUT);
   
@@ -68,13 +65,24 @@ void photo_changing() {                    //フォトインタラプタ
   if(valL1 != valL2){
      valL2 = valL1;
      changeL++;
-     Serial.println("L is changed "+(String)changeL+" times.");
   }
   if(valR1 != valR2){
      valR2 = valR1;
      changeR++;
-     Serial.println("R is changed "+(String)changeR+" times.");
   }
+  if (changeR > changeL) {
+    speedR -= 1;
+    if(speedR < 0)
+      speedR = 0;
+    speedL = 150;
+  }else{
+    speedL -= 1;
+    if(speedL < 0)
+      speedL = 0;
+    speedR = 150;
+  }
+    Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR);
+    Serial.println("speedL:"+(String)speedL+" speedR:"+(String)speedR);
 }
 
 
@@ -98,14 +106,14 @@ void CBuzzer(bool b) {                       //ブザー
 //    count++;
 //  }
   if(b){
-    cw(100);cw(100);cw(100);//ブザー1
+    cw(100);cw(100);//cw(100);//ブザー1
 //    delay(200);
 //    cw(300);cw(300);cw(300);
 //    delay(200);
 //    cw(100);cw(100);cw(100);
     b = false;
   }else{
-    cw(300);cw(300);cw(100);//ブザー2
+    cw(300);//cw(300);cw(100);//ブザー2
 //    delay(200);
 //    cw(300);cw(300);cw(300);
     b = true;
@@ -118,7 +126,7 @@ void barricade_check() {                    //障害物検知
   distance = (6762 / (analogRead(0) - 9)) - 4;
   Serial.println("\t\t"+(String)distance+"cm");
 
-  if (distance < 18) 
+  if (0 < distance && distance < 40) 
     count++;
   else
     count = 0;
@@ -131,10 +139,10 @@ void barricade_check() {                    //障害物検知
     Serial.println("\t\tenter CBuzzer(true)");
     CBuzzer(true);//ブザー1
     Serial.println("\t\texited CBuzzer(true)");
-    while (count >= 1){
+    while (count > 0){
       distance = (6762 / (analogRead(0) - 9)) - 4;
       Serial.println("\t\t\t"+(String)distance+"cm");
-      if (distance > 15)
+      if (distance > 39 || distance < 0 )
         count--;
       delay(100);
     }
@@ -152,55 +160,99 @@ void barricade_check() {                    //障害物検知
 }
 
 void motor_speed() {                        //モータ速度更新
-  analogWrite(PWM_motR, speedL);
-  analogWrite(PWM_motL, speedR);
+  analogWrite(PWM_motL, speedL);
+  analogWrite(PWM_motR, speedR);
 }
 
 void circle(int angle) {                    //回転
+  //analogWrite(PWM_motL, 150);
+  //analogWrite(PWM_motR, 150);
   Serial.println("\t\t\tentered circle("+(String)angle+")");
+  double circleBaisuu = 7;
   if (angle == 180)
 //    while (1) {
 //      motor_speed();
 //      if (changeL > 19 || changeR > 19)
 //          break;
 //    }
-    while (changeL < 12 && changeR < 12) {
-      motor_speed();
-      photo_changing();
-    }
+//    while (changeL < 2 * circleBaisuu  && changeR < 2 * circleBaisuu) {
+//      photo_changing();
+//    }
+      while ( changeL < 18 ){
+        valL1 = digitalRead(counterL);
+        valR1 = digitalRead(counterR);
+        if(valL1 != valL2){
+          valL2 = valL1;
+          changeL++;
+        }
+          analogWrite(PWM_motL, 0);
+          analogWrite(PWM_motR, 0);
+          delay(100);
+          //koko
+          analogWrite(PWM_motL, 150);
+          analogWrite(PWM_motR, 150);
+          delay(100);
+//        valL1 = digitalRead(counterL);
+//        valR1 = digitalRead(counterR);
+//        if(valL1 != valL2){
+//          valL2 = valL1;
+//          changeL++;
+//          analogWrite(PWM_motL, 0);
+//          analogWrite(PWM_motR, 0);
+//          delay(100);
+//          Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR);
+        //}
+//        if(valR1 != valR2){
+//          valR2 = valR1;
+//          changerR++;
+//          analogWrite(PWM_motL, 0);
+//          analogWrite(PWM_motR, 0);
+//          delay(1000);
+//        }
+//        analogWrite(PWM_motL, 150);
+//        analogWrite(PWM_motR, 150);
+      }
   else if (angle == 135)
-    while (changeL < 14 && changeR < 14) {
-      motor_speed();
+    while (changeL < 1.5 * circleBaisuu && changeR < 1.5 * circleBaisuu) {
       photo_changing();
     }
   else
-    while (changeL < 9 && changeR < 9) {
-      motor_speed();
+    while (changeL < 1 * circleBaisuu && changeR < 1 * circleBaisuu) {
       photo_changing();
+      
     }
   changeL = changeR = 0;
   Serial.println("\t\t\texit circle("+(String)angle+")");
+//  digitalWrite(motorL1, LOW);
+//  digitalWrite(motorL2, LOW);
+//  digitalWrite(motorR1, LOW);
+//  digitalWrite(motorR2, LOW);
+    digitalWrite(motorL1,1);
+    digitalWrite(motorL2,1);
+    digitalWrite(motorR1,1);
+    digitalWrite(motorR2,1);
+  delay(1000);
 }
 
 void ahead() {                              //前進
   Serial.println("\t\tentered ahead()");
-  digitalWrite(DMMDL, HIGH);
   method_id = 0;
-  digitalWrite(motorR1, HIGH);
-  digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, LOW);
-  digitalWrite(motorL2, HIGH);
-  analogWrite(PWM_motL, speedR);
+  digitalWrite(motorL1, HIGH);
+  digitalWrite(motorL2, LOW);
+  analogWrite(PWM_motL, speedL);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, HIGH);
+  analogWrite(PWM_motR, speedR);
   Serial.println("\t\tenter while(1)");
-  while (changeL < 682 && changeR < 682) {
+  //while (changeL < 30 && changeR < 30) {
+  while (changeL < 342 && changeR < 342) {
+    
     motor_speed();
     photo_changing();
     barricade_check();
     delay(100);
   }
   Serial.println("\t\texited while(1)");
-  digitalWrite(DMMDL, LOW);
   Serial.println("\t\texit ahead())");
   return;
 }
@@ -208,34 +260,33 @@ void ahead() {                              //前進
 
 void ahead_d() {                            //前進斜め
   Serial.println("\t\tentered ahead_d()");
-  digitalWrite(DMMDL, HIGH);
   method_id = 1;
-  digitalWrite(motorR1, HIGH);
-  digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, LOW);
-  digitalWrite(motorL2, HIGH);
-  analogWrite(PWM_motL, speedR);
+  digitalWrite(motorL1, HIGH);
+  digitalWrite(motorL2, LOW);
+  analogWrite(PWM_motL, speedL);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, HIGH);
+  analogWrite(PWM_motR, speedR);
   Serial.println("\t\tenter while(1)");
-  while (changeL < 964 && changeR < 964) {
+ // while (changeL < 964 && changeR < 964) {
+    while (changeL < 482 && changeR < 482) {
     motor_speed();
     photo_changing();
     barricade_check();
   }
   Serial.println("\t\texited while(1)");
-  digitalWrite(DMMDL, LOW);
   Serial.println("\t\texit ahead_d())");
   return;
 }
 
 void astern(int changechange) {             //後進
   Serial.println("\t\tentered astern("+(String)changechange+")");
-  digitalWrite(motorR1, LOW);
-  digitalWrite(motorR2, HIGH);
-  analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, HIGH);
-  digitalWrite(motorL2, LOW);
+  digitalWrite(motorL1, LOW);
+  digitalWrite(motorL2, HIGH);
   analogWrite(PWM_motL, speedR);
+  digitalWrite(motorR1, HIGH);
+  digitalWrite(motorR2, LOW);
+  analogWrite(PWM_motR, speedL);
   Serial.println("\t\tThe operation by inertia:"+(String)changechange);
   Serial.println("\t\tenter while(1)");
   while (1) {
@@ -257,10 +308,10 @@ void brake() {                              //ブレーキ
     Serial.println("\texit brake()for a unknown IR");
     return;
   }
-  digitalWrite(motorR1, LOW);
-  digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, LOW);
   changeL = changeR = 0;
   Serial.println("wait for 3 seconds.");
   delay(3000);
@@ -271,21 +322,21 @@ void brake() {                              //ブレーキ
   Serial.println("\tenter astern("+(String)changechange+")");
   astern(changechange);
   Serial.println("\texited astern("+(String)changechange+")");
-  digitalWrite(motorR1, LOW);
-  digitalWrite(motorR2, LOW);
   digitalWrite(motorL1, LOW);
   digitalWrite(motorL2, LOW);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, LOW);
   Serial.println("\texit brake()");
 }
 
 void left(int left) {                       //左旋回
   Serial.println("\t\tentered left("+(String)left+")");
-  digitalWrite(motorR1, LOW);
-  digitalWrite(motorR2, HIGH);
-  analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, LOW);
-  digitalWrite(motorL2, HIGH);
-  analogWrite(PWM_motL, speedR);
+  digitalWrite(motorL1, HIGH);
+  digitalWrite(motorL2, LOW);
+  analogWrite(PWM_motL, speedL);
+  digitalWrite(motorR1, HIGH);
+  digitalWrite(motorR2, LOW);
+  analogWrite(PWM_motR, speedR);
   Serial.println("\t\tenter circle("+(String)left+")");
   circle(left);
   Serial.println("\t\texited circle("+(String)left+")");
@@ -293,12 +344,12 @@ void left(int left) {                       //左旋回
 }
 void right(int right) {                     //右旋回
   Serial.println("\t\tentered right("+(String)right+")");
-  digitalWrite(motorR1, HIGH);
-  digitalWrite(motorR2, LOW);
-  analogWrite(PWM_motR, speedL);
-  digitalWrite(motorL1, HIGH);
-  digitalWrite(motorL2, LOW);
-  analogWrite(PWM_motL, speedR);
+  digitalWrite(motorL1, LOW);
+  digitalWrite(motorL2, HIGH);
+  analogWrite(PWM_motL, speedL);
+  digitalWrite(motorR1, LOW);
+  digitalWrite(motorR2, HIGH);
+  analogWrite(PWM_motR, speedR);
   Serial.println("\t\tenter circle("+(String)right+")");
   circle(right);
   Serial.println("\t\texited circle("+(String)right+")");
@@ -455,7 +506,13 @@ Serial.println("\texit receiveValue()");
 int id[] = {1,2};
 
 void loop() {
-
+//  delay(2000);
+//  digitalWrite(motorL1, HIGH);
+//  digitalWrite(motorL2, LOW);
+//  analogWrite(PWM_motL, speedR);
+//  digitalWrite(motorR1, LOW);
+//  digitalWrite(motorR2, HIGH);
+//  analogWrite(PWM_motR, speedL);
   if (irrecv.decode(&results)) {
     Serial.println(results.value, HEX);
     Serial.println(results.value, DEC);
@@ -480,7 +537,7 @@ void loop() {
     irrecv.resume();
   }
   delay(1000);
-  Serial.println("speedL:"+(String)speedL+" speedR:"+(String)speedR);
+  Serial.println(".");
   
 }
 //---------------

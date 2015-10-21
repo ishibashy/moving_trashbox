@@ -19,23 +19,8 @@ void setup() {
 void barricade_check() {                    //障害物検知
   int distance;
   distance = (6762 / (analogRead(0) - 9)) - 4;
-  Serial.print(distance);
-  Serial.println("cm");
-  Serial.println(analogRead(0));
-  //80cm以内を複数回検知してからにするかも
-  if (distance < 500) {
-    Serial.println("!!!STOP!!!");
-    while (1){
-      distance = (6762 / (analogRead(0) - 9)) - 4;
-      Serial.print(distance);
-      Serial.println("cm");
-      Serial.println(analogRead(0));
-      if ((6762 / (analogRead(0) - 9)) - 4 > 80)
-        break;
-      delay(500);
-    }
-    Serial.println("!!!RESTART!!!");    
-  }
+  Serial.println((String)distance+"cm:"+(String)analogRead(0));
+
 }
 
 //-----メイン-----
