@@ -41,7 +41,7 @@ void photo_changingR() {                    //フォトインタラプタ右
 }
 //----------------
 void loop(){
-  delay(1000);
+  delay(10);
   Serial.print("speedL:");
   Serial.print(speedL);
   Serial.print(" speedR:");

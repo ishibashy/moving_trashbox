@@ -25,6 +25,9 @@ int valR1 = HIGH;
 int valR2 = HIGH;
 const int counterL = 2;
 const int counterR = 3;
+//フォトインタラプタ、change回数（割り込み）
+//int volatile changeL = 0;
+//int volatile changeR = 0;
 //測距モジュール
 int count = 0;//pin番号ではない
 
@@ -51,6 +54,9 @@ void setup() {
   //フォトインタラプタ
   pinMode(counterL, INPUT);
   pinMode(counterR, INPUT);
+  //フォトインタラプタ
+//  attachInterrupt(1, photo_changingL, CHANGE);
+//  attachInterrupt(0, photo_changingR, CHANGE);
   //ブザー
   pinMode(buzzer, OUTPUT);
   
@@ -70,20 +76,38 @@ void photo_changing() {                    //フォトインタラプタ
      valR2 = valR1;
      changeR++;
   }
-  if (changeR > changeL) {
-    speedR -= 1;
-    if(speedR < 0)
-      speedR = 0;
-    speedL = 150;
-  }else{
-    speedL -= 1;
-    if(speedL < 0)
-      speedL = 0;
-    speedR = 150;
-  }
-    Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR);
-    Serial.println("speedL:"+(String)speedL+" speedR:"+(String)speedR);
+//  if (changeR > changeL) {
+//    speedR -= 1;
+//    if(speedR < 0)
+//      speedR = 0;
+//    speedL = 150;
+//  }else{
+//    speedL -= 1;
+//    if(speedL < 0)
+//      speedL = 0;
+//    speedR = 150;
+//  }
+    Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR+" speedL:"+(String)speedL+" speedR:"+(String)speedR);
 }
+
+////--割り込み関数--
+//void photo_changingL() {                    //フォトインタラプタ左
+//  changeL++;
+//  Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR+" speedL:"+(String)speedL+" speedR:"+(String)speedR);
+////  if (changeL > changeR) {
+////    speedL--;
+////    speedR = 255;//後で直進する比を実測
+////  }
+//}
+//
+//void photo_changingR() {                    //フォトインタラプタ右
+//  changeR++;
+//  Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR+" speedL:"+(String)speedL+" speedR:"+(String)speedR);
+////  if (changeR > changeL) {
+////    speedR--;
+////    speedL = 255;//後で直進する比を実測
+////  }
+//}
 
 
 void cw(int melo){                            //トンツートンツー・ー・ー
@@ -171,6 +195,11 @@ void changeCount(){
           valL2 = valL1;
           changeL++;
         }
+        if(valR1 != valR2){
+          valR2 = valR1;
+          changeR++;
+        }
+        Serial.println("changeL:"+(String)changeL+" changeR:"+(String)changeR);
   }
   
 void circle(int angle) {                    //回転
@@ -187,15 +216,15 @@ void circle(int angle) {                    //回転
 //    while (changeL < 2 * circleBaisuu  && changeR < 2 * circleBaisuu) {
 //      photo_changing();
 //    }
-      while ( changeL < 18 ){
+      while ( changeL < 14 ){
           changeCount();
           speedL = speedR = 0;
           motor_speed();
-          delay(100);
+          delay(150);
           changeCount();
-          speedL = speedR = 150;
+          speedL = speedR = 200;
           motor_speed();
-          delay(100);
+          delay(150);
 //        valL1 = digitalRead(counterL);
 //        valR1 = digitalRead(counterR);
 //        if(valL1 != valL2){
@@ -248,8 +277,11 @@ void ahead() {                              //前進
   digitalWrite(motorR2, HIGH);
   analogWrite(PWM_motR, speedR);
   Serial.println("\t\tenter while(1)");
-  //while (changeL < 30 && changeR < 30) {
-  while (changeL < 342 && changeR < 342) {
+    while (changeL < 15 && changeR < 15) {
+ // while (changeL < 342 && changeR < 342) {
+    //左右逆！！ 
+    speedL = 150;//右
+    speedR = 200;//左
     
     motor_speed();
     photo_changing();
