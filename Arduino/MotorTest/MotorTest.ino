@@ -178,9 +178,18 @@ int angle3 = 180;
 void loop() {
 
   ahead();
-  delay(30000);
+  delay(3000);
   brake();
-  delay(10000);
+  delay(1000);
+  ahead();
+  delay(3000);
+  digitalWrite(motorR1, HIGH);
+  digitalWrite(motorR2, LOW);
+  analogWrite(PWM_motR, speedL);
+  digitalWrite(motorL1, LOW);
+  digitalWrite(motorL2, HIGH);
+  analogWrite(PWM_motL, speedR);
+  delay(100);
 
 }
 //---------------
