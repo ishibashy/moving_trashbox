@@ -1,2 +1,2 @@
 # moving_trashbox
-授業で制作している作品のArduinoプログラムです．
+授業で制作していた作品のArduinoプログラムです．
